@@ -1,0 +1,332 @@
+{
+  "name": "navigation_bar",
+  "version": 33,
+  "source-key": {
+    "type": "figma",
+    "file": "7RzB5mC9Qj82hGEbAM11GM",
+    "node": "38:3",
+    "version": "2205685389783780702",
+    "component-id": "915162a5cdf4f7f91ace42d239b4d1faf0d5c6e7"
+  },
+  "default": "Navigation bar",
+  "documentation": "bottom nav bar",
+  "design": {
+    "atoms": [
+      {
+        "type": "group",
+        "id": "top_level",
+        "root": "true"
+      },
+      {
+        "type": "group",
+        "id": "world view"
+      },
+      {
+        "type": "group",
+        "id": "list view"
+      },
+      {
+        "type": "group",
+        "id": "icon-container"
+      },
+      {
+        "type": "group",
+        "id": "state-layer"
+      },
+      {
+        "type": "group",
+        "id": "Frame"
+      },
+      {
+        "type": "vector",
+        "id": "Vector"
+      },
+      {
+        "type": "group",
+        "id": "icon-container1"
+      },
+      {
+        "type": "group",
+        "id": "state-layer1"
+      },
+      {
+        "type": "group",
+        "id": "Frame1"
+      },
+      {
+        "type": "vector",
+        "id": "Vector1"
+      }
+    ],
+    "modes": {
+      "Navigation bar": {
+        "rules": [
+          {
+            "id": "top_level",
+            "padding": {
+              "left": 8.0,
+              "right": 8.0
+            },
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "arrangement": "row",
+            "cross-axis-align": "end",
+            "children": [
+              "world view",
+              "list view"
+            ],
+            "background-color": {
+              "alpha": 1.0,
+              "hue": 0.0,
+              "saturation": 0.0,
+              "value": 0.9215686274509803
+            },
+            "clip-content": false
+          },
+          {
+            "id": "world view",
+            "padding": {
+              "top": 12.0,
+              "bottom": 16.0
+            },
+            "tap-handler": "$on world view tapped",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "children": [
+              "icon-container"
+            ],
+            "item-spacing": 4.0,
+            "clip-content": false
+          },
+          {
+            "id": "list view",
+            "padding": {
+              "top": 12.0,
+              "bottom": 16.0
+            },
+            "tap-handler": "$on list view tapped",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "children": [
+              "icon-container1"
+            ],
+            "item-spacing": 4.0,
+            "clip-content": false
+          },
+          {
+            "id": "icon-container",
+            "border-radius": 16.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "shrink"
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "children": [
+              "state-layer"
+            ]
+          },
+          {
+            "id": "state-layer",
+            "padding": {
+              "left": 20.0,
+              "top": 4.0,
+              "right": 20.0,
+              "bottom": 4.0
+            },
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 48.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 48.0
+              }
+            },
+            "arrangement": "row",
+            "children": [
+              "Frame"
+            ],
+            "background-color": "$world view background color",
+            "clip-content": false
+          },
+          {
+            "id": "Frame",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              }
+            },
+            "is-structured": false,
+            "children": [
+              "Vector"
+            ]
+          },
+          {
+            "id": "Vector",
+            "margin": 2.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              }
+            },
+            "vector-content": "vector.svg"
+          },
+          {
+            "id": "icon-container1",
+            "border-radius": 16.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "shrink"
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "children": [
+              "state-layer1"
+            ]
+          },
+          {
+            "id": "state-layer1",
+            "padding": {
+              "left": 20.0,
+              "top": 4.0,
+              "right": 20.0,
+              "bottom": 4.0
+            },
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 48.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 48.0
+              }
+            },
+            "arrangement": "row",
+            "children": [
+              "Frame1"
+            ],
+            "background-color": "$list view background color",
+            "clip-content": false
+          },
+          {
+            "id": "Frame1",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              }
+            },
+            "is-structured": false,
+            "children": [
+              "Vector1"
+            ]
+          },
+          {
+            "id": "Vector1",
+            "margin": {
+              "left": 2.5,
+              "top": 4.5,
+              "right": 3.0,
+              "bottom": 4.5
+            },
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              }
+            },
+            "vector-content": "vector1.svg"
+          }
+        ]
+      }
+    }
+  },
+  "parameters": {
+    "on world view tapped": {
+      "data-type": "void-callback",
+      "required": false,
+      "description": ""
+    },
+    "on list view tapped": {
+      "data-type": "void-callback",
+      "required": false,
+      "description": ""
+    },
+    "world view background color": {
+      "data-type": "color",
+      "required": false,
+      "description": ""
+    },
+    "list view background color": {
+      "data-type": "color",
+      "required": false,
+      "description": ""
+    }
+  },
+  "previews": [
+    {
+      "design": "Navigation bar",
+      "size": {
+        "width": 375.0,
+        "height": 76.0
+      },
+      "parameters": {
+        "world view background color": {
+          "alpha": 1.0,
+          "hue": 0.0,
+          "saturation": 0.0,
+          "value": 0.8666666666666667
+        }
+      }
+    }
+  ],
+  "adin-component-search-paths": [],
+  "image-search-paths": [],
+  "vector-search-paths": []
+}

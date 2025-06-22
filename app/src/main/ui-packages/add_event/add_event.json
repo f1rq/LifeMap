@@ -1,0 +1,360 @@
+{
+  "name": "add_event",
+  "version": 33,
+  "source-key": {
+    "type": "figma",
+    "file": "7RzB5mC9Qj82hGEbAM11GM",
+    "node": "76:4",
+    "version": "2205685389783780702",
+    "component-id": "7df95c19403de2b4b8280d6464fc1c747d4921a5"
+  },
+  "default": "Add event",
+  "design": {
+    "atoms": [
+      {
+        "type": "group",
+        "id": "top_level",
+        "root": "true"
+      },
+      {
+        "type": "group",
+        "id": "top_level_synth"
+      },
+      {
+        "type": "group",
+        "id": "Background"
+      },
+      {
+        "type": "group",
+        "id": "Content"
+      },
+      {
+        "type": "group",
+        "id": "Title"
+      },
+      {
+        "type": "group",
+        "id": "FAB"
+      },
+      {
+        "type": "text",
+        "id": "LifeMap title"
+      },
+      {
+        "type": "text",
+        "id": "subtitle"
+      },
+      {
+        "type": "group",
+        "id": "state-layer"
+      },
+      {
+        "type": "group",
+        "id": "icon"
+      },
+      {
+        "type": "vector",
+        "id": "icon1"
+      },
+      {
+        "type": "group",
+        "id": "layer"
+      }
+    ],
+    "modes": {
+      "Add event": {
+        "rules": [
+          {
+            "id": "top_level",
+            "is-structured": false,
+            "children": [
+              "top_level_synth",
+              "Background"
+            ],
+            "clip-content": false
+          },
+          {
+            "id": "top_level_synth",
+            "opacity": 100.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "shrink"
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "arrangement": "row",
+            "main-axis-align": "start",
+            "cross-axis-align": "start",
+            "children": [
+              "Content"
+            ],
+            "clip-content": false
+          },
+          {
+            "id": "Background",
+            "border-radius": 12.0,
+            "stroke-width": 1.0,
+            "stroke-color": {
+              "alpha": 1.0,
+              "hue": 269.99999999999994,
+              "saturation": 0.057692307692307626,
+              "value": 0.8156862745098039
+            },
+            "is-structured": false,
+            "children": [
+              "layer"
+            ],
+            "background-color": {
+              "alpha": 1.0,
+              "hue": 0.0,
+              "saturation": 0.0,
+              "value": 0.9215686274509803
+            }
+          },
+          {
+            "id": "Content",
+            "padding": 20.0,
+            "border-radius": 12.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 375.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 82.0
+              }
+            },
+            "arrangement": "row",
+            "main-axis-align": "space-between",
+            "children": [
+              "Title",
+              "FAB"
+            ]
+          },
+          {
+            "id": "Title",
+            "padding": {
+              "top": 5.0
+            },
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 156.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 48.0
+              }
+            },
+            "cross-axis-align": "start",
+            "children": [
+              "LifeMap title",
+              "subtitle"
+            ],
+            "item-spacing": -1.0,
+            "clip-content": false
+          },
+          {
+            "id": "FAB",
+            "border-radius": 16.0,
+            "drop-shadow": {
+              "color": {
+                "alpha": 0.2980392156862745,
+                "hue": 0.0,
+                "saturation": 0.0,
+                "value": 0.0
+              },
+              "blur": 3.0,
+              "offset-x": 0.0,
+              "offset-y": 1.0,
+              "spread": 0.0,
+              "blend-mode": "normal"
+            },
+            "tap-handler": "$on add button tapped",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "shrink"
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "arrangement": "row",
+            "children": [
+              "state-layer"
+            ],
+            "background-color": {
+              "alpha": 1.0,
+              "hue": 0.0,
+              "saturation": 0.0,
+              "value": 0.9215686274509803
+            }
+          },
+          {
+            "id": "LifeMap title",
+            "font-weight": "^md.sys.typescale.title-large.weight",
+            "color": "^md.sys.color.on-surface",
+            "text-content": "Add event",
+            "overflow": "visible",
+            "text-align": "left",
+            "text-size": "^md.sys.typescale.title-large.size",
+            "letter-spacing": "^md.sys.typescale.title-large.tracking",
+            "line-height": "^md.sys.typescale.title-large.line-height",
+            "typeface": "^md.sys.typescale.title-large.font"
+          },
+          {
+            "id": "subtitle",
+            "font-weight": "^md.sys.typescale.label-medium.weight",
+            "color": "^md.sys.color.on-surface",
+            "text-content": "With localization, date etc.",
+            "overflow": "visible",
+            "text-align": "left",
+            "text-size": "^md.sys.typescale.label-medium.size",
+            "letter-spacing": "^md.sys.typescale.label-medium.tracking",
+            "line-height": "^md.sys.typescale.label-medium.line-height",
+            "typeface": "^md.sys.typescale.label-medium.font"
+          },
+          {
+            "id": "state-layer",
+            "padding": 16.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "shrink"
+              },
+              "height-constraints": {
+                "sizing-mode": "shrink"
+              }
+            },
+            "arrangement": "row",
+            "children": [
+              "icon"
+            ],
+            "clip-content": false
+          },
+          {
+            "id": "icon",
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              },
+              "height-constraints": {
+                "sizing-mode": "fixed",
+                "value": 24.0
+              }
+            },
+            "is-structured": false,
+            "children": [
+              "icon1"
+            ],
+            "clip-content": false
+          },
+          {
+            "id": "icon1",
+            "margin": 3.0,
+            "size-constraints": {
+              "width-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              },
+              "height-constraints": {
+                "sizing-mode": "proportional",
+                "value": 1.0
+              }
+            },
+            "vector-content": "icon.svg"
+          },
+          {
+            "id": "layer",
+            "padding": 10.0,
+            "item-spacing": 10.0,
+            "clip-content": false
+          }
+        ]
+      }
+    }
+  },
+  "parameters": {
+    "on add button tapped": {
+      "data-type": "void-callback",
+      "required": false,
+      "description": ""
+    }
+  },
+  "ambients": {
+    "md.sys.color.on-surface": {
+      "data-type": "color",
+      "description": null
+    },
+    "md.sys.typescale.title-large.font": {
+      "data-type": "typeface",
+      "description": null
+    },
+    "md.sys.typescale.title-large.weight": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.title-large.size": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.title-large.tracking": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.title-large.line-height": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.label-medium.font": {
+      "data-type": "typeface",
+      "description": null
+    },
+    "md.sys.typescale.label-medium.weight": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.label-medium.size": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.label-medium.tracking": {
+      "data-type": "double",
+      "description": null
+    },
+    "md.sys.typescale.label-medium.line-height": {
+      "data-type": "double",
+      "description": null
+    }
+  },
+  "previews": [
+    {
+      "design": "Add event",
+      "size": {
+        "width": 375.0,
+        "height": 82.0
+      },
+      "ambients": {
+        "md.sys.color.on-surface": {
+          "alpha": 1.0,
+          "hue": 264.0,
+          "saturation": 0.15625,
+          "value": 0.12549019607843137
+        },
+        "md.sys.typescale.title-large.weight": 400.0,
+        "md.sys.typescale.title-large.size": 22.0,
+        "md.sys.typescale.title-large.line-height": 1.272727279663086,
+        "md.sys.typescale.label-medium.weight": 500.0,
+        "md.sys.typescale.label-medium.size": 12.0,
+        "md.sys.typescale.label-medium.tracking": 0.5,
+        "md.sys.typescale.label-medium.line-height": 1.3333332824707032
+      }
+    }
+  ],
+  "adin-component-search-paths": [],
+  "image-search-paths": [],
+  "vector-search-paths": []
+}
