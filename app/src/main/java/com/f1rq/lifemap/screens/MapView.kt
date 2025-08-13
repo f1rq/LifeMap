@@ -6,12 +6,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.f1rq.lifemap.components.AddEventCard
+import androidx.compose.runtime.*
+import com.f1rq.lifemap.components.AddEvent
 
 
 @Composable
-fun MapView(modifier: Modifier = Modifier) {
+fun MapView(navController: NavController, modifier: Modifier = Modifier) {
+    var showSheet by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -22,14 +26,13 @@ fun MapView(modifier: Modifier = Modifier) {
             modifier = Modifier.align(Alignment.Center)
         )
         AddEventCard(
-            onCreateEventClick = {},
+            onCreateEventClick = { showSheet = true },
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+        if (showSheet) {
+            AddEvent(
+                onDismiss = { showSheet = false}
+            )
+        }
     }
-}
-
-@Preview
-@Composable
-fun MapViewPreview() {
-    MapView()
 }

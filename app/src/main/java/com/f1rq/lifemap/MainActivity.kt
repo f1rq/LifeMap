@@ -4,6 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -45,35 +50,107 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightNavigationBars = true
                 }
 
+                val navBackStackEntry = navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry.value?.destination?.route
+
+                // Define which routes should show the bars
+                val routesWithBars = listOf("mapview", "listview")
+                val showBars = currentRoute in routesWithBars
+
                 Scaffold(
                     topBar = {
-                          TopBar(
-                              onSettingsButtonClick = { navController.navigate("settings")},
-                              onNotificationsButtonClick = { navController.navigate("notifications")}
-                          )
+                        if (showBars) {
+                            TopBar(
+                                onSettingsButtonClick = { navController.navigate("settings")},
+                                onNotificationsButtonClick = { navController.navigate("notifications")}
+                            )
+                        }
                     },
                     bottomBar = {
-                        val navBackStackEntry = navController.currentBackStackEntryAsState()
-                        val currentRoute = navBackStackEntry.value?.destination?.route
-
-                        NavBar(
-                            onMapViewClicked = { navController.navigate("mapview") },
-                            onListViewClicked = { navController.navigate("listview") },
-                            mapViewBackgroundColor = if (currentRoute == "mapview") ActiveNavColor else InactiveNavColor,
-                            listViewBackgroundColor = if (currentRoute == "listview") ActiveNavColor else InactiveNavColor
-                        )
+                        if (showBars) {
+                            NavBar(
+                                onMapViewClicked = { navController.navigate("mapview") },
+                                onListViewClicked = { navController.navigate("listview") },
+                                mapViewBackgroundColor = if (currentRoute == "mapview") ActiveNavColor else InactiveNavColor,
+                                listViewBackgroundColor = if (currentRoute == "listview") ActiveNavColor else InactiveNavColor
+                            )
+                        }
                     }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = "mapview",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        enterTransition = {
+                            val from = this.initialState.destination.route
+                            val to = this.targetState.destination.route
+                            if (from == "mapview" && to == "listview") {
+                                androidx.compose.animation.slideInHorizontally(
+                                    initialOffsetX = { it },
+                                    animationSpec = tween(300)
+                                )
+                            } else if (from == "listview" && to == "mapview") {
+                                androidx.compose.animation.slideInHorizontally(
+                                    initialOffsetX = { -it },
+                                    animationSpec = tween(300)
+                                )
+                            } else {
+                                scaleIn(
+                                    initialScale = 0.9f,
+                                    animationSpec = tween(200)
+                                ) + fadeIn(
+                                    animationSpec = tween(200)
+                                )
+                            }
+                        },
+                        exitTransition = {
+                            val from = this.initialState.destination.route
+                            val to = this.targetState.destination.route
+                            if (from == "mapview" && to == "listview") {
+                                androidx.compose.animation.slideOutHorizontally(
+                                    targetOffsetX = { -it },
+                                    animationSpec = tween(200)
+                                )
+                            } else if (from == "listview" && to == "mapview") {
+                                androidx.compose.animation.slideOutHorizontally(
+                                    targetOffsetX = { it },
+                                    animationSpec = tween(200)
+                                )
+                            } else {
+                                scaleOut(
+                                    targetScale = 0.9f,
+                                    animationSpec = tween(200)
+                                ) + fadeOut(
+                                    animationSpec = tween(200)
+                                )
+                            }
+                        }
                     ) {
-                        composable("mapview") { MapView(Modifier) }
+                        composable("mapview") {
+                            MapView(
+                                navController = navController,
+                                Modifier
+                            )
+                        }
                         composable("listview") { ListView(Modifier) }
-                        composable("settings") { SettingsScreen(navController = navController, Modifier)}
-                        composable("notifications") { NotificationsScreen(navController = navController, Modifier)}
-                        composable("settings_notifications") { SettingsNotificationsScreen(navController = navController, Modifier) }
+                        composable("settings") {
+                            SettingsScreen(
+                                navController = navController,
+                                Modifier
+                            )
+                        }
+                        composable("notifications") {
+                            NotificationsScreen(
+                                navController = navController,
+                                Modifier
+                            )
+                        }
+                        composable("settings_notifications") {
+                            SettingsNotificationsScreen(
+                                navController = navController,
+                                Modifier
+                            )
+                        }
                     }
                 }
             }

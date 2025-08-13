@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 val MainBG = Color(0xFFECECEC)
 val SecondaryBG = Color(0xFFDDDDDD)
+val ThirdBG = Color(0xFFEFEFEF)
 val PrimaryColor = Color(0xFF49454F)
 val MainTextColor = Color(0xFF1D1B20)
 
