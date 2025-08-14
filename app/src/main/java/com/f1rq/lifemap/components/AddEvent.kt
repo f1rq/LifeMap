@@ -19,6 +19,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,30 +29,55 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.f1rq.lifemap.ui.theme.LifeMapTheme
 import com.f1rq.lifemap.ui.theme.PrimaryColor
 import com.f1rq.lifemap.data.entity.Event
+import com.f1rq.lifemap.ui.viewmodel.EventViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddEvent(onDismiss: () -> Unit) {
+fun AddEvent(
+    onDismiss: () -> Unit,
+    viewModel: EventViewModel = koinViewModel()
+) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        AddEventSheetContent(onDismiss)
+        AddEventSheetContent(
+            onDismiss = onDismiss,
+            viewModel = viewModel
+        )
     }
 }
 
 @Composable
-fun AddEventSheetContent(onDismiss: () -> Unit) {
+fun AddEventSheetContent(
+    onDismiss: () -> Unit,
+    viewModel: EventViewModel
+) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf("") }
     var eventDesc by remember { mutableStateOf("") }
+    var showSuccessMessage by remember { mutableStateOf(false) }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
-
-    var isSaving by remember { mutableStateOf(false) }
-    var saveMessage by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
 
     val isFormValid = eventName.isNotBlank() && eventDate.isNotBlank()
+
+    LaunchedEffect(uiState.addEventSuccess) {
+        if (uiState.addEventSuccess) {
+            showSuccessMessage = true
+            eventName = ""
+            eventDate = ""
+            eventDesc = ""
+
+            viewModel.clearAddEventSuccess()
+
+            delay(1500)
+            onDismiss()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -115,30 +142,14 @@ fun AddEventSheetContent(onDismiss: () -> Unit) {
                     date = eventDate,
                     description = eventDesc
                 )
-                saveEvent(event, context) { success ->
-                    isSaving = false
-                    if (success) {
-                        saveMessage = "Event saved successfully!"
-                        eventName = ""
-                        eventDate = ""
-                        eventDesc = ""
-
-                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                            kotlinx.coroutines.delay(1500)
-                            onDismiss()
-                        }
-                    } else {
-                        saveMessage = "Failed to save event. Please try again."
-                    }
-                }
-                isSaving = true
+                viewModel.addEvent(event)
             },
-            enabled = isFormValid && !isSaving,
+            enabled = isFormValid && !uiState.isAddingEvent,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
         ) {
-            if (isSaving) {
+            if (uiState.isAddingEvent) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
@@ -158,52 +169,35 @@ fun AddEventSheetContent(onDismiss: () -> Unit) {
         }
 
         // Success/Error Message
-        if (saveMessage.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (saveMessage.contains("success"))
-                        MaterialTheme.colorScheme.primaryContainer
-                    else
-                        MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Text(
-                    text = saveMessage,
-                    modifier = Modifier.padding(12.dp),
-                    color = if (saveMessage.contains("success"))
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer
-                )
+        when {
+            showSuccessMessage -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Text(
+                        text = "Event saved successfully!",
+                        modifier = Modifier.padding(12.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            uiState.error != null -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = uiState.error!!,
+                        modifier = Modifier.padding(12.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
             }
         }
-    }
-}
-
-private fun saveEvent(event: Event, context: android.content.Context, onResult: (Boolean) -> Unit) {
-    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-        try {
-            val database = com.f1rq.lifemap.data.database.AppDatabase.getDatabase(context)
-            val repository = com.f1rq.lifemap.data.repository.EventRepository(database.eventDao())
-
-            val eventId = repository.insertEvent(event)
-
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                onResult(eventId > 0)
-            }
-        } catch (e: Exception) {
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                onResult(false)
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AddEventPreview() {
-    LifeMapTheme {
-        AddEventSheetContent(onDismiss = {})
     }
 }

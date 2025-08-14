@@ -1,8 +1,6 @@
 package com.f1rq.lifemap.data.database
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.f1rq.lifemap.data.dao.EventDao
 import com.f1rq.lifemap.data.entity.Event
@@ -13,25 +11,5 @@ import com.f1rq.lifemap.data.entity.Event
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
     abstract fun eventDao(): EventDao
-
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "lifemap_database"
-                )
-                    .fallbackToDestructiveMigration(false)
-                    .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
 }
