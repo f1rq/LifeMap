@@ -9,17 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.*
 import java.util.*
 import androidx.compose.material3.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import kotlin.text.get
 import androidx.compose.foundation.layout.Box
-import kotlin.text.get
 import androidx.compose.material3.OutlinedTextField
-import kotlin.text.get
 
 @Composable
 fun DateSelectRow(
@@ -55,7 +49,7 @@ fun DateSelectRow(
         OutlinedTextField(
             value = selectedDate,
             onValueChange = {},
-            label = { Text("Date *") },
+            label = { Text("Date*") },
             readOnly = true,
             enabled = false,
             colors = OutlinedTextFieldDefaults.colors(
@@ -67,15 +61,11 @@ fun DateSelectRow(
             supportingText = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.End
                 ) {
                     Text(
-                        text = if (isError) "This field is required" else "Required",
-                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
                         text = "Select date",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             },

@@ -68,14 +68,22 @@ fun AddEventSheetContent(
     LaunchedEffect(uiState.addEventSuccess) {
         if (uiState.addEventSuccess) {
             showSuccessMessage = true
+
             eventName = ""
             eventDate = ""
             eventDesc = ""
 
-            viewModel.clearAddEventSuccess()
-
             delay(1500)
+
+            viewModel.clearAddEventSuccess()
             onDismiss()
+        }
+    }
+
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+                delay(3000)
+            viewModel.clearError()
         }
     }
 

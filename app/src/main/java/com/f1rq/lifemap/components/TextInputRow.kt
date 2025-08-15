@@ -17,9 +17,10 @@ fun TextInputRow(
     label: String,
     maxLength: Int = 20,
     required: Boolean = true,
+    showError: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val isError = required && value.isEmpty()
+    val isError = required && value.isEmpty() && showError
 
     OutlinedTextField(
         value = value,
@@ -28,20 +29,12 @@ fun TextInputRow(
                 onValueChange(newValue)
             }
         },
-        label = { Text(label + if (required) " *" else "") },
+        label = { Text(if (required) "$label*" else label) },
         supportingText = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = when {
-                        required && isError -> "This field is required"
-                        required -> "Required"
-                        else -> ""
-                    },
-                    color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 Text(
                     text = "${value.length}/$maxLength",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
