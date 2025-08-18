@@ -27,25 +27,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.f1rq.lifemap.ui.theme.LifeMapTheme
-import com.f1rq.lifemap.ui.theme.PrimaryColor
 import com.f1rq.lifemap.data.entity.Event
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddEvent(
     onDismiss: () -> Unit,
     viewModel: EventViewModel = koinViewModel()
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
         AddEventSheetContent(
             onDismiss = onDismiss,
+            onCancel = {
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            },
             viewModel = viewModel
         )
     }
@@ -54,6 +66,7 @@ fun AddEvent(
 @Composable
 fun AddEventSheetContent(
     onDismiss: () -> Unit,
+    onCancel: () -> Unit,
     viewModel: EventViewModel
 ) {
     var eventName by remember { mutableStateOf("") }
@@ -170,7 +183,7 @@ fun AddEventSheetContent(
 
         // Cancel Button
         OutlinedButton(
-            onClick = onDismiss,
+            onClick = onCancel,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Cancel")
