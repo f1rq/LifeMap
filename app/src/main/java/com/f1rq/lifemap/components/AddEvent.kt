@@ -2,6 +2,11 @@
 
 package com.f1rq.lifemap.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,7 +56,12 @@ fun AddEvent(
         sheetState = sheetState
     ) {
         AddEventSheetContent(
-            onDismiss = onDismiss,
+            onDismiss = {
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            },
             onCancel = {
                 coroutineScope.launch {
                     sheetState.hide()
@@ -72,7 +82,6 @@ fun AddEventSheetContent(
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf("") }
     var eventDesc by remember { mutableStateOf("") }
-    var showSuccessMessage by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -80,14 +89,6 @@ fun AddEventSheetContent(
 
     LaunchedEffect(uiState.addEventSuccess) {
         if (uiState.addEventSuccess) {
-            showSuccessMessage = true
-
-            eventName = ""
-            eventDate = ""
-            eventDesc = ""
-
-            delay(1500)
-
             viewModel.clearAddEventSuccess()
             onDismiss()
         }
@@ -95,7 +96,7 @@ fun AddEventSheetContent(
 
     LaunchedEffect(uiState.error) {
         if (uiState.error != null) {
-                delay(3000)
+            delay(3000)
             viewModel.clearError()
         }
     }
@@ -103,7 +104,6 @@ fun AddEventSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(480.dp)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -172,8 +172,8 @@ fun AddEventSheetContent(
         ) {
             if (uiState.isAddingEvent) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(28.dp),
+                    strokeWidth = 3.dp,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
@@ -189,36 +189,32 @@ fun AddEventSheetContent(
             Text("Cancel")
         }
 
-        // Success/Error Message
-        when {
-            showSuccessMessage -> {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Text(
-                        text = "Event saved successfully!",
-                        modifier = Modifier.padding(12.dp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            uiState.error != null -> {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Text(
-                        text = uiState.error!!,
-                        modifier = Modifier.padding(12.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
+        // Error Message Card (only show errors in the sheet)
+        AnimatedVisibility(
+            visible = uiState.error != null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Text(
+                    text = uiState.error ?: "",
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
             }
         }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
     }
 }

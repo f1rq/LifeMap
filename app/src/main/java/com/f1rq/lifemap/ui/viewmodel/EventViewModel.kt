@@ -13,19 +13,18 @@ data class EventUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isAddingEvent: Boolean = false,
-    val addEventSuccess: Boolean = false
+    val addEventSuccess: Boolean = false,
+    val successMessage: String? = null
 )
 
 class EventViewModel(
     private val eventRepository: EventRepository
 ) : ViewModel() {
 
-    // ✅ Create MutableStateFlow for operations state
     private val _operationState = MutableStateFlow(
         EventUiState(isLoading = true)
     )
 
-    // ✅ Combine repository data with operation state
     val uiState: StateFlow<EventUiState> = combine(
         eventRepository.getAllEvents(),
         _operationState
@@ -47,12 +46,13 @@ class EventViewModel(
             _operationState.value = _operationState.value.copy(
                 isAddingEvent = false,
                 addEventSuccess = id > 0,
-                error = if (id <= 0) "Failed to save event" else null
+                successMessage = if (id > 0) "Event '${event.name}' added successfully" else null,
+                error = if (id <= 0) "Failed to add event" else null
             )
         } catch (e: Exception) {
             _operationState.value = _operationState.value.copy(
                 isAddingEvent = false,
-                error = "Error saving event: ${e.message}"
+                error = "Error adding event: ${e.message}"
             )
         }
     }
@@ -60,6 +60,9 @@ class EventViewModel(
     fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         try {
             eventRepository.deleteEvent(event)
+            _operationState.value = _operationState.value.copy(
+                successMessage = "Event '${event.name}' deleted successfully"
+            )
         } catch (e: Exception) {
             _operationState.value = _operationState.value.copy(
                 error = "Failed to delete event: ${e.message}"
@@ -70,6 +73,9 @@ class EventViewModel(
     fun deleteEventById(id: Long) = viewModelScope.launch(Dispatchers.IO) {
         try {
             eventRepository.deleteEventById(id)
+            _operationState.value = _operationState.value.copy(
+                successMessage = "Event deleted successfully!"
+            )
         } catch (e: Exception) {
             _operationState.value = _operationState.value.copy(
                 error = "Failed to delete event: ${e.message}"
@@ -80,6 +86,9 @@ class EventViewModel(
     fun updateEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         try {
             eventRepository.updateEvent(event)
+            _operationState.value = _operationState.value.copy(
+                successMessage = "Event '${event.name}' updated successfully!"
+            )
         } catch (e: Exception) {
             _operationState.value = _operationState.value.copy(
                 error = "Failed to update event: ${e.message}"
@@ -115,5 +124,9 @@ class EventViewModel(
 
     fun clearAddEventSuccess() {
         _operationState.value = _operationState.value.copy(addEventSuccess = false)
+    }
+
+    fun clearSuccessMessage() {
+        _operationState.value = _operationState.value.copy(successMessage = null)
     }
 }
