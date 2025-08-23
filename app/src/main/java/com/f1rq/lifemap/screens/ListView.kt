@@ -90,12 +90,16 @@ fun ListView(
             }
             else -> {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        vertical = 8.dp
+                    )
                 ) {
                     items(uiState.events) { event ->
                         EventCard(
                             event = event,
-                            onDeleteClick = { viewModel.deleteEvent(event) }
+                            onDeleteClick = { viewModel.deleteEvent(event) },
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
                 }
@@ -107,14 +111,16 @@ fun ListView(
 @Composable
 private fun EventCard(
     event: Event,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MainBG,
-        )
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
