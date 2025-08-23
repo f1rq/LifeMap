@@ -13,11 +13,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -136,10 +138,16 @@ class MainActivity : ComponentActivity() {
                             composable("mapview") {
                                 MapView(
                                     navController = navController,
-                                    Modifier
+                                    Modifier,
+                                    viewModel = viewModel
                                 )
                             }
-                            composable("listview") { ListView(Modifier) }
+                            composable("listview") {
+                                ListView(
+                                    Modifier,
+                                    viewModel = viewModel
+                                )
+                            }
                             composable("settings") {
                                 SettingsScreen(
                                     navController = navController,
@@ -160,10 +168,12 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-
                     SuccessMessage(
                         viewModel = viewModel,
-                        modifier = Modifier.align(Alignment.TopCenter)
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .statusBarsPadding()
+                            .zIndex(999f)
                     )
                 }
             }

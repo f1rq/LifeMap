@@ -28,6 +28,8 @@ import com.f1rq.lifemap.ui.theme.MainTextColor
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.f1rq.lifemap.ui.theme.MainBG
 
 @Composable
 fun ListView(
@@ -109,7 +111,10 @@ private fun EventCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MainBG,
+        )
     ) {
         Row(
             modifier = Modifier

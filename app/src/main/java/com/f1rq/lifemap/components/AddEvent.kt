@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import com.f1rq.lifemap.data.entity.Event
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
-import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -44,7 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddEvent(
     onDismiss: () -> Unit,
-    viewModel: EventViewModel = koinViewModel()
+    viewModel: EventViewModel
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -89,7 +88,6 @@ fun AddEventSheetContent(
 
     LaunchedEffect(uiState.addEventSuccess) {
         if (uiState.addEventSuccess) {
-            viewModel.clearAddEventSuccess()
             onDismiss()
         }
     }
@@ -163,6 +161,7 @@ fun AddEventSheetContent(
                     date = eventDate,
                     description = eventDesc
                 )
+                println("DEBUG: AddEvent - About to call addEvent with: ${event.name}")
                 viewModel.addEvent(event)
             },
             enabled = isFormValid && !uiState.isAddingEvent,

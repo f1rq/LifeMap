@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
@@ -52,7 +53,7 @@ fun SuccessMessage(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Text(
-                text = uiState.successMessage ?: "",
+                text = uiState.successMessage ?: AnnotatedString(""),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier

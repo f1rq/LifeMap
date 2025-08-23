@@ -10,10 +10,16 @@ import androidx.navigation.NavController
 import com.f1rq.lifemap.components.AddEventCard
 import androidx.compose.runtime.*
 import com.f1rq.lifemap.components.AddEvent
+import com.f1rq.lifemap.ui.viewmodel.EventViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
-fun MapView(navController: NavController, modifier: Modifier = Modifier) {
+fun MapView(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: EventViewModel = koinViewModel()
+) {
     var showSheet by remember { mutableStateOf(false) }
 
     Box(
@@ -29,9 +35,11 @@ fun MapView(navController: NavController, modifier: Modifier = Modifier) {
             onCreateEventClick = { showSheet = true },
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
         if (showSheet) {
             AddEvent(
-                onDismiss = { showSheet = false}
+                onDismiss = { showSheet = false },
+                viewModel = viewModel
             )
         }
     }
