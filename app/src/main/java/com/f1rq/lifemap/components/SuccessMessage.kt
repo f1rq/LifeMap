@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.f1rq.lifemap.ui.theme.MainBG
+import com.f1rq.lifemap.ui.theme.MainTextColor
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 
@@ -48,13 +50,14 @@ fun SuccessMessage(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = MainBG
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            onClick = { viewModel.clearSuccessMessage() }
         ) {
             Text(
                 text = uiState.successMessage ?: AnnotatedString(""),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MainTextColor,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .padding(16.dp)
