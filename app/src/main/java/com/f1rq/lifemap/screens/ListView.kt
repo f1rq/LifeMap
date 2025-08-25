@@ -29,7 +29,14 @@ import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.f1rq.lifemap.ui.theme.MainBG
+import com.f1rq.lifemap.components.AlertConfirmation
+import androidx.compose.ui.text.SpanStyle
 
 @Composable
 fun ListView(
@@ -114,6 +121,8 @@ private fun EventCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -154,14 +163,35 @@ private fun EventCard(
             }
 
             IconButton (
-                onClick = onDeleteClick
+//                onClick = onDeleteClick
+                onClick = { showDeleteDialog = true }
             ) {
                 Icon(
                     painter = painterResource(id = com.f1rq.lifemap.R.drawable.delete_icon),
                     contentDescription = "Delete Event",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MainTextColor
                 )
             }
         }
+    }
+    if (showDeleteDialog) {
+        AlertConfirmation(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirmation = {
+                onDeleteClick()
+                showDeleteDialog = false
+            },
+            dialogTitle = "Delete Event",
+            dialogText = buildAnnotatedString {
+                append("Are you sure you want to delete the event ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(event.name)
+                }
+                append("?")
+            },
+            confirmButtonText = "Delete",
+            dismissButtonText = "Cancel",
+            iconRes = com.f1rq.lifemap.R.drawable.delete_icon,
+        )
     }
 }
