@@ -34,19 +34,10 @@ class EventViewModel(
         eventRepository.getAllEvents(),
         _operationState
     ) { events, operationState ->
-        println("DEBUG: Flow combine - events count: ${events.size}")
-        println("DEBUG: Flow combine - operationState.successMessage: '${operationState.successMessage}'")
-        println("DEBUG: Flow combine - operationState.addEventSuccess: ${operationState.addEventSuccess}")
-        println("DEBUG: Flow combine - operationState.isAddingEvent: ${operationState.isAddingEvent}")
-
         val result = operationState.copy(
             events = events,
             isLoading = false
         )
-
-        println("DEBUG: Flow combine - result.successMessage: '${result.successMessage}'")
-        println("DEBUG: Flow combine - result.addEventSuccess: ${result.addEventSuccess}")
-
         result
     }.stateIn(
         scope = viewModelScope,
@@ -56,7 +47,6 @@ class EventViewModel(
 
     fun addEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            println("DEBUG: addEvent - Starting to add event: ${event.name}")
 
             _operationState.value = _operationState.value.copy(
                 isAddingEvent = true,
@@ -66,7 +56,6 @@ class EventViewModel(
             )
 
             val id = eventRepository.insertEvent(event)
-            println("DEBUG: addEvent - Repository returned ID: $id")
 
             kotlinx.coroutines.delay(200)
 
@@ -89,10 +78,7 @@ class EventViewModel(
                 error = if (id <= 0) "Failed to add event" else null
             )
 
-            println("DEBUG: addEvent - State updated with successMessage: '${_operationState.value.successMessage}'")
-
         } catch (e: Exception) {
-            println("DEBUG: addEvent - Exception: ${e.message}")
             _operationState.value = _operationState.value.copy(
                 isAddingEvent = false,
                 addEventSuccess = false,
@@ -196,22 +182,18 @@ class EventViewModel(
     }
 
     fun clearError() {
-        println("DEBUG: clearError called")
         _operationState.value = _operationState.value.copy(error = null)
     }
 
     fun clearAddEventSuccess() {
-        println("DEBUG: clearAddEventSuccess called")
         _operationState.value = _operationState.value.copy(addEventSuccess = false)
     }
 
     fun clearSuccessMessage() {
-        println("DEBUG: clearSuccessMessage called")
         _operationState.value = _operationState.value.copy(successMessage = null)
     }
 
     fun testSuccessMessage() {
-        println("DEBUG: testSuccessMessage called - setting test message")
         val testMessage = buildAnnotatedString {
             append("TEST MESSAGE - Event ")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -222,6 +204,5 @@ class EventViewModel(
         _operationState.value = _operationState.value.copy(
             successMessage = testMessage
         )
-        println("DEBUG: testSuccessMessage - state updated, successMessage='${_operationState.value.successMessage}'")
     }
 }

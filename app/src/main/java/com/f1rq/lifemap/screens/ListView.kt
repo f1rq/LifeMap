@@ -1,5 +1,6 @@
 package com.f1rq.lifemap.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.withStyle
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.components.AlertConfirmation
 import androidx.compose.ui.text.SpanStyle
+import com.f1rq.lifemap.components.EventInfoSheet
 
 @Composable
 fun ListView(
@@ -44,6 +46,8 @@ fun ListView(
     viewModel: EventViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var selectedEvent by remember { mutableStateOf<Event?>(null) }
+    var showEventInfo by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -106,6 +110,10 @@ fun ListView(
                         EventCard(
                             event = event,
                             onDeleteClick = { viewModel.deleteEvent(event) },
+                            onEventClick = {
+                                selectedEvent = event
+                                showEventInfo = true
+                            },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
@@ -113,18 +121,31 @@ fun ListView(
             }
         }
     }
+    if (showEventInfo && selectedEvent != null) {
+        EventInfoSheet(
+            event = selectedEvent!!,
+            onDismiss = {
+                showEventInfo = false
+                selectedEvent = null
+            },
+            viewModel = viewModel
+        )
+    }
 }
 
 @Composable
 private fun EventCard(
     event: Event,
+    onEventClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEventClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MainBG,
