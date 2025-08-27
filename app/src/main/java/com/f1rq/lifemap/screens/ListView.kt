@@ -38,6 +38,7 @@ import androidx.compose.ui.text.withStyle
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.components.AlertConfirmation
 import androidx.compose.ui.text.SpanStyle
+import com.f1rq.lifemap.components.AlertEditEvent
 import com.f1rq.lifemap.components.EventInfoSheet
 
 @Composable
@@ -114,6 +115,9 @@ fun ListView(
                                 selectedEvent = event
                                 showEventInfo = true
                             },
+                            onEditClick = { updatedEvent ->
+                                viewModel.updateEvent(updatedEvent)
+                            },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                     }
@@ -138,9 +142,11 @@ private fun EventCard(
     event: Event,
     onEventClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onEditClick: (Event) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -184,7 +190,16 @@ private fun EventCard(
             }
 
             IconButton (
-//                onClick = onDeleteClick
+                onClick = { showEditDialog = true }
+            ) {
+                Icon(
+                    painter = painterResource(id = com.f1rq.lifemap.R.drawable.edit_icon),
+                    contentDescription = "Edit Event",
+                    tint = MainTextColor
+                )
+            }
+
+            IconButton (
                 onClick = { showDeleteDialog = true }
             ) {
                 Icon(
@@ -213,6 +228,17 @@ private fun EventCard(
             confirmButtonText = "Delete",
             dismissButtonText = "Cancel",
             iconRes = com.f1rq.lifemap.R.drawable.delete_icon,
+        )
+    }
+
+    if (showEditDialog) {
+        AlertEditEvent(
+            onDismissRequest = { showEditDialog = false },
+            event = event,
+            onConfirmation = { updatedEvent ->
+                onEditClick(updatedEvent)
+                showEditDialog = false
+            }
         )
     }
 }
