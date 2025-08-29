@@ -38,6 +38,7 @@ import androidx.compose.ui.text.withStyle
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.components.AlertConfirmation
 import androidx.compose.ui.text.SpanStyle
+import com.f1rq.lifemap.R
 import com.f1rq.lifemap.components.AlertEditEvent
 import com.f1rq.lifemap.components.EventInfoSheet
 
@@ -117,8 +118,7 @@ fun ListView(
                             },
                             onEditClick = { updatedEvent ->
                                 viewModel.updateEvent(updatedEvent)
-                            },
-                            modifier = Modifier.padding(horizontal = 4.dp)
+                            }
                         )
                     }
                 }
@@ -142,8 +142,7 @@ private fun EventCard(
     event: Event,
     onEventClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    onEditClick: (Event) -> Unit,
-    modifier: Modifier = Modifier
+    onEditClick: (Event) -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -163,7 +162,7 @@ private fun EventCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -189,24 +188,28 @@ private fun EventCard(
                 }
             }
 
-            IconButton (
-                onClick = { showEditDialog = true }
-            ) {
-                Icon(
-                    painter = painterResource(id = com.f1rq.lifemap.R.drawable.edit_icon),
-                    contentDescription = "Edit Event",
-                    tint = MainTextColor
-                )
-            }
+            Column {
+                Row {
+                    IconButton(
+                        onClick = { showEditDialog = true }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.edit_icon),
+                            contentDescription = "Edit Event",
+                            tint = MainTextColor
+                        )
+                    }
 
-            IconButton (
-                onClick = { showDeleteDialog = true }
-            ) {
-                Icon(
-                    painter = painterResource(id = com.f1rq.lifemap.R.drawable.delete_icon),
-                    contentDescription = "Delete Event",
-                    tint = MainTextColor
-                )
+                    IconButton(
+                        onClick = { showDeleteDialog = true }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete_icon),
+                            contentDescription = "Delete Event",
+                            tint = MainTextColor
+                        )
+                    }
+                }
             }
         }
     }
@@ -227,7 +230,7 @@ private fun EventCard(
             },
             confirmButtonText = "Delete",
             dismissButtonText = "Cancel",
-            iconRes = com.f1rq.lifemap.R.drawable.delete_icon,
+            iconRes = R.drawable.delete_icon,
         )
     }
 
