@@ -1,30 +1,27 @@
 package com.f1rq.lifemap.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.f1rq.lifemap.data.entity.Event
-import com.f1rq.lifemap.ui.theme.MainBG
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,118 +41,126 @@ fun AlertEditEvent(
     event: Event,
     onConfirmation: (Event) -> Unit,
 ) {
-    var eventName by remember { mutableStateOf(event.name) }
-    var eventDescription by remember { mutableStateOf(event.description) }
-    var eventDate by remember { mutableStateOf(event.date) }
-    var isVisible by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
-
-    fun handleDismiss() {
-        coroutineScope.launch {
-            isVisible = false
-            delay(300)
-            onDismissRequest()
-        }
-    }
-
-    Dialog(
-        onDismissRequest = { handleDismiss() },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState
     ) {
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = slideInVertically(
-                initialOffsetY = { fullHeight -> fullHeight },
-                animationSpec = tween(300)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = slideOutVertically(
-                targetOffsetY = { fullHeight -> fullHeight },
-                animationSpec = tween(300)
-            ) + fadeOut(animationSpec = tween(300))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MainBG)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { handleDismiss() }) {
-                            Icon(
-                                painter = painterResource(id = com.f1rq.lifemap.R.drawable.close_button),
-                                contentDescription = "Close"
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Text(
-                            text = "Edit Event",
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        TextButton(
-                            onClick = {
-                                val updatedEvent = event.copy(
-                                    name = eventName,
-                                    description = eventDescription,
-                                    date = eventDate
-                                )
-                                onConfirmation(updatedEvent)
-                                handleDismiss()
-                            }
-                        ) {
-                            Text("Save")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    OutlinedTextField(
-                        value = eventName,
-                        onValueChange = { eventName = it },
-                        label = { Text("Event Name") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = eventDate,
-                        onValueChange = { eventDate = it },
-                        label = { Text("Event Date") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = eventDescription,
-                        onValueChange = { eventDescription = it },
-                        label = { Text("Description") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        maxLines = 5
-                    )
+        EditEventSheetContent(
+            onDismiss = {
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onDismissRequest()
+                }
+            },
+            event = event,
+            onConfirmation = { updatedEvent ->
+                onConfirmation(updatedEvent)
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onDismissRequest()
                 }
             }
+        )
+    }
+}
+
+@Composable
+fun EditEventSheetContent(
+    onDismiss: () -> Unit,
+    event: Event,
+    onConfirmation: (Event) -> Unit
+) {
+    var eventName by remember { mutableStateOf(event.name) }
+    var eventDesc by remember { mutableStateOf(event.description) }
+    var eventDate by remember { mutableStateOf(event.date) }
+
+    val isFormValid = eventName.isNotBlank()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Edit Event",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        }
+
+        // Event Name
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TextInputRow(
+                value = eventName,
+                onValueChange = { eventName = it },
+                label = "Event Name",
+                maxLength = 30,
+                modifier = Modifier.weight(1f),
+                required = true
+            )
+        }
+
+        // Date Selection
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            DateSelectRow(
+                selectedDate = eventDate,
+                onDateSelected = { eventDate = it },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Description
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TextInputRow(
+                value = eventDesc,
+                onValueChange = { eventDesc = it },
+                label = "Description",
+                maxLength = 100,
+                modifier = Modifier.weight(1f),
+                required = false
+            )
+        }
+        Button(
+            onClick = {
+                val updatedEvent = event.copy(
+                    name = eventName,
+                    description = eventDesc,
+                    date = eventDate
+                )
+                onConfirmation(updatedEvent)
+            },
+            enabled = isFormValid,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Text("Save Changes")
+        }
+
+        OutlinedButton(
+            onClick = onDismiss,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Cancel")
         }
     }
 }
