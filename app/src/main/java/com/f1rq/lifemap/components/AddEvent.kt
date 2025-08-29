@@ -84,7 +84,7 @@ fun AddEventSheetContent(
 
     val uiState by viewModel.uiState.collectAsState()
 
-    val isFormValid = eventName.isNotBlank() && eventDate.isNotBlank()
+    val isFormValid = eventName.isNotBlank()
 
     LaunchedEffect(uiState.addEventSuccess) {
         if (uiState.addEventSuccess) {
@@ -126,7 +126,7 @@ fun AddEventSheetContent(
             )
         }
 
-        // Date Selection (Required)
+        // Date Selection
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -161,7 +161,6 @@ fun AddEventSheetContent(
                     date = eventDate,
                     description = eventDesc
                 )
-                println("DEBUG: AddEvent - About to call addEvent with: ${event.name}")
                 viewModel.addEvent(event)
             },
             enabled = isFormValid && !uiState.isAddingEvent,
@@ -213,7 +212,5 @@ fun AddEventSheetContent(
                 )
             }
         }
-
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
     }
 }
