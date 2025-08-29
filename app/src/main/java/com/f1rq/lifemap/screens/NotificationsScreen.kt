@@ -1,5 +1,6 @@
 package com.f1rq.lifemap.screens
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,8 @@ import com.f1rq.lifemap.ui.theme.PrimaryColor
 
 @Composable
 fun NotificationsScreen(navController: NavController, modifier: Modifier = Modifier) {
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -31,7 +34,7 @@ fun NotificationsScreen(navController: NavController, modifier: Modifier = Modif
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             IconButton(
-                onClick = { navController.navigate("mapview") },
+                onClick = { backDispatcher?.onBackPressed() },
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
