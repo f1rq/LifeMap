@@ -49,7 +49,7 @@ fun DateSelectRow(
         OutlinedTextField(
             value = selectedDate,
             onValueChange = {},
-            label = { Text("Date*") },
+            label = { Text("Date") },
             readOnly = true,
             enabled = false,
             colors = OutlinedTextFieldDefaults.colors(
