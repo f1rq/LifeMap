@@ -5,8 +5,14 @@ import android.content.pm.PackageManager
 import android.location.Location
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,11 +22,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.f1rq.lifemap.components.AddEvent
 import com.f1rq.lifemap.components.AddEventCard
+import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import com.google.android.gms.location.LocationServices
 import org.koin.androidx.compose.koinViewModel
@@ -92,6 +100,24 @@ fun MapView(
         }
     }
 
+    // Function to center map on user location
+    fun centerOnUserLocation() {
+        if (hasLocationPermission) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    location?.let {
+                        val userLocation = GeoPoint(it.latitude, it.longitude)
+                        mapView?.controller?.animateTo(userLocation)
+                        mapView?.controller?.setZoom(15.0)
+                    }
+                }
+            } catch (e: SecurityException) {
+                // Handle permission error
+            }
+        }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -123,6 +149,55 @@ fun MapView(
                 }
             }
         )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Map zoom in button
+            FloatingActionButton(
+                onClick = {
+                    mapView?.controller?.zoomIn()
+                },
+                modifier = Modifier.size(48.dp),
+                containerColor = MainBG
+            ) {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.add_24px),
+                    contentDescription = "Zoom In"
+                )
+            }
+
+            // Map zoom out button
+            FloatingActionButton(
+                onClick = {
+                    mapView?.controller?.zoomOut()
+                },
+                modifier = Modifier.size(48.dp),
+                containerColor = MainBG
+            ) {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.remove_24px),
+                    contentDescription = "Zoom Out"
+                )
+            }
+
+            // Center on user location button
+            FloatingActionButton(
+                onClick = {
+                    centerOnUserLocation()
+                },
+                modifier = Modifier.size(48.dp),
+                containerColor = MainBG
+            ) {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.location_searching_24px),
+                    contentDescription = "My Location"
+                )
+            }
+        }
 
         AddEventCard(
             onCreateEventClick = { showSheet = true },
