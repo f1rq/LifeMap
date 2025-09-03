@@ -24,11 +24,13 @@ import com.f1rq.lifemap.components.AddEventCard
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import com.google.android.gms.location.LocationServices
 import org.koin.androidx.compose.koinViewModel
+import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.MapView as OSMMapView
+import java.io.File
 
 @Composable
 fun MapView(
@@ -42,6 +44,14 @@ fun MapView(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", 0))
+        Configuration.getInstance().userAgentValue = context.packageName
+
+        val osmDir = File(context.cacheDir, "osmdroid")
+        osmDir.mkdirs()
+        Configuration.getInstance().osmdroidBasePath = osmDir
+        Configuration.getInstance().osmdroidTileCache = File(osmDir, "titles")
+
         hasLocationPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -96,18 +106,15 @@ fun MapView(
                     mapController.setZoom(15.0)
                     mapController.setCenter(GeoPoint(48.8566, 2.3522)) // Default center
 
-                    if (hasLocationPermission) {
-                        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), this)
-                        locationOverlay.enableMyLocation()
-                        locationOverlay.enableFollowLocation()
-                        overlays.add(locationOverlay)
-                    }
+                    post { invalidate() }
 
                     mapView = this
                 }
             },
             update = { view ->
-                if (hasLocationPermission && view.overlays.isEmpty()) {
+                if (hasLocationPermission) {
+                    view.overlays.removeAll { it is MyLocationNewOverlay }
+
                     val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), view)
                     locationOverlay.enableMyLocation()
                     locationOverlay.enableFollowLocation()
