@@ -55,10 +55,14 @@ fun MapView(
         Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", 0))
         Configuration.getInstance().userAgentValue = context.packageName
 
+        // Performance optimizations
+        Configuration.getInstance().cacheMapTileCount = 12 // Reduce memory usage
+        Configuration.getInstance().cacheMapTileOvershoot = 2 // Reduce tile overshoot
+
         val osmDir = File(context.cacheDir, "osmdroid")
         osmDir.mkdirs()
         Configuration.getInstance().osmdroidBasePath = osmDir
-        Configuration.getInstance().osmdroidTileCache = File(osmDir, "titles")
+        Configuration.getInstance().osmdroidTileCache = File(osmDir, "tiles")
 
         hasLocationPermission = ContextCompat.checkSelfPermission(
             context,
@@ -92,6 +96,7 @@ fun MapView(
                     location?.let {
                         val userLocation = GeoPoint(it.latitude, it.longitude)
                         mapView?.controller?.animateTo(userLocation)
+                        mapView?.controller?.setZoom(15.0)
                     }
                 }
             } catch (e: SecurityException) {
@@ -127,6 +132,7 @@ fun MapView(
                 OSMMapView(context).apply {
                     setTileSource(TileSourceFactory.MAPNIK)
                     setMultiTouchControls(true)
+                    isTilesScaledToDpi = true
 
                     val mapController = controller
                     mapController.setZoom(15.0)
