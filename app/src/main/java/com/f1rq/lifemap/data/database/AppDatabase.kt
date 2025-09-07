@@ -7,7 +7,7 @@ import com.f1rq.lifemap.data.entity.Event
 
 @Database(
     entities = [Event::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
