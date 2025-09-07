@@ -2,6 +2,7 @@
 
 package com.f1rq.lifemap.components
 
+import android.location.Location
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -39,11 +40,13 @@ import kotlinx.coroutines.delay
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
 
 @Composable
 fun AddEvent(
     onDismiss: () -> Unit,
-    viewModel: EventViewModel
+    viewModel: EventViewModel,
+    currentLocation: GeoPoint? = null
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -67,7 +70,8 @@ fun AddEvent(
                     onDismiss()
                 }
             },
-            viewModel = viewModel
+            viewModel = viewModel,
+            currentLocation = currentLocation
         )
     }
 }
@@ -76,11 +80,14 @@ fun AddEvent(
 fun AddEventSheetContent(
     onDismiss: () -> Unit,
     onCancel: () -> Unit,
-    viewModel: EventViewModel
+    viewModel: EventViewModel,
+    currentLocation: GeoPoint? = null
 ) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf("") }
     var eventDesc by remember { mutableStateOf("") }
+    var eventLocation by remember { mutableStateOf(currentLocation) }
+    var showLocationPicker by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -153,13 +160,27 @@ fun AddEventSheetContent(
             )
         }
 
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            LocationSelectRow(
+                selectedLocation = eventLocation,
+                onLocationSelected = { eventLocation = it},
+                onPickLocationClick = { showLocationPicker = true },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
         // Save Button
         Button(
             onClick = {
                 val event = Event(
                     name = eventName,
                     date = eventDate,
-                    description = eventDesc
+                    description = eventDesc,
+                    latitude = eventLocation?.latitude,
+                    longitude = eventLocation?.longitude
                 )
                 viewModel.addEvent(event)
             },
