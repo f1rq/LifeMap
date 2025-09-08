@@ -2,7 +2,6 @@
 
 package com.f1rq.lifemap.components
 
-import android.location.Location
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -39,6 +38,7 @@ import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 
@@ -46,12 +46,14 @@ import org.osmdroid.util.GeoPoint
 fun AddEvent(
     onDismiss: () -> Unit,
     viewModel: EventViewModel,
+    navController: NavController,
     currentLocation: GeoPoint? = null
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
     val coroutineScope = rememberCoroutineScope()
+    val selectedLocation by viewModel.selectedLocation.collectAsState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -71,7 +73,13 @@ fun AddEvent(
                 }
             },
             viewModel = viewModel,
-            currentLocation = currentLocation
+            currentLocation = selectedLocation ?: currentLocation,
+            onShowLocationPicker = {
+                viewModel.showLocationPicker()
+            },
+            onLocationChanged = { location ->
+                viewModel.setSelectedLocation(location)
+            }
         )
     }
 }
@@ -81,13 +89,16 @@ fun AddEventSheetContent(
     onDismiss: () -> Unit,
     onCancel: () -> Unit,
     viewModel: EventViewModel,
-    currentLocation: GeoPoint? = null
+    currentLocation: GeoPoint? = null,
+    onShowLocationPicker: () -> Unit,
+    onLocationChanged: (GeoPoint?) -> Unit
 ) {
     var eventName by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf("") }
     var eventDesc by remember { mutableStateOf("") }
-    var eventLocation by remember { mutableStateOf(currentLocation) }
-    var showLocationPicker by remember { mutableStateOf(false) }
+
+    val selectedLocation by viewModel.selectedLocation.collectAsState()
+    val eventLocation = selectedLocation ?: currentLocation
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -160,15 +171,17 @@ fun AddEventSheetContent(
             )
         }
 
+        // Location Selection
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             LocationSelectRow(
                 selectedLocation = eventLocation,
-                onLocationSelected = { eventLocation = it},
-                onPickLocationClick = { showLocationPicker = true },
-                modifier = Modifier.weight(1f)
+                onLocationSelected = { newLocation ->
+                    viewModel.setSelectedLocation(newLocation)
+                },
+                onPickLocationClick = onShowLocationPicker
             )
         }
 
@@ -233,5 +246,7 @@ fun AddEventSheetContent(
                 )
             }
         }
+
+
     }
 }

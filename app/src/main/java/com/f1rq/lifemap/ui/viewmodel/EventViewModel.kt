@@ -12,6 +12,7 @@ import com.f1rq.lifemap.data.repository.EventRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
 
 data class EventUiState(
     val events: List<Event> = emptyList(),
@@ -29,6 +30,28 @@ class EventViewModel(
     private val _operationState = MutableStateFlow(
         EventUiState(isLoading = true)
     )
+
+    private val _selectedLocation = MutableStateFlow<GeoPoint?>(null)
+    val selectedLocation = _selectedLocation.asStateFlow()
+
+    private val _showLocationPicker = MutableStateFlow(false)
+    val showLocationPicker = _showLocationPicker.asStateFlow()
+
+    fun setSelectedLocation(location: GeoPoint?) {
+        _selectedLocation.value = location
+    }
+
+    fun getCurrentLocation(): GeoPoint? {
+        return _selectedLocation.value
+    }
+
+    fun showLocationPicker() {
+        _showLocationPicker.value = true
+    }
+
+    fun hideLocationPicker() {
+        _showLocationPicker.value = false
+    }
 
     val uiState: StateFlow<EventUiState> = combine(
         eventRepository.getAllEvents(),

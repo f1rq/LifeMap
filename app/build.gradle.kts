@@ -68,5 +68,7 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     implementation(libs.osmdroid.android)
     implementation(libs.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.androidx.material.icons.extended)
 }
-

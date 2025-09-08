@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FloatingActionButton
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.f1rq.lifemap.components.AddEvent
@@ -49,6 +51,7 @@ fun MapView(
     var showSheet by remember { mutableStateOf(false) }
     var mapView by remember { mutableStateOf<OSMMapView?>(null) }
     var hasLocationPermission by remember { mutableStateOf(false) }
+    var currentUserLocation by remember { mutableStateOf<GeoPoint?>(null)}
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -95,6 +98,7 @@ fun MapView(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                     location?.let {
                         val userLocation = GeoPoint(it.latitude, it.longitude)
+                        currentUserLocation = userLocation
                         mapView?.controller?.animateTo(userLocation)
                         mapView?.controller?.setZoom(15.0)
                     }
@@ -113,6 +117,7 @@ fun MapView(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                     location?.let {
                         val userLocation = GeoPoint(it.latitude, it.longitude)
+                        currentUserLocation = userLocation
                         mapView?.controller?.animateTo(userLocation)
                         mapView?.controller?.setZoom(15.0)
                     }
@@ -210,10 +215,18 @@ fun MapView(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         if (showSheet) {
-            AddEvent(
-                onDismiss = { showSheet = false },
-                viewModel = viewModel
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1000f)
+            ) {
+                AddEvent(
+                    onDismiss = { showSheet = false },
+                    viewModel = viewModel,
+                    navController = navController,
+                    currentLocation = currentUserLocation
+                )
+            }
         }
     }
 }
