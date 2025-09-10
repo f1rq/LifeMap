@@ -34,23 +34,12 @@ class EventViewModel(
     private val _selectedLocation = MutableStateFlow<GeoPoint?>(null)
     val selectedLocation = _selectedLocation.asStateFlow()
 
-    private val _showLocationPicker = MutableStateFlow(false)
-    val showLocationPicker = _showLocationPicker.asStateFlow()
-
     fun setSelectedLocation(location: GeoPoint?) {
         _selectedLocation.value = location
     }
 
     fun getCurrentLocation(): GeoPoint? {
         return _selectedLocation.value
-    }
-
-    fun showLocationPicker() {
-        _showLocationPicker.value = true
-    }
-
-    fun hideLocationPicker() {
-        _showLocationPicker.value = false
     }
 
     val uiState: StateFlow<EventUiState> = combine(

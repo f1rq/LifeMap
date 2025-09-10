@@ -33,13 +33,11 @@ import com.f1rq.lifemap.screens.MapView
 import com.f1rq.lifemap.screens.NotificationsScreen
 import com.f1rq.lifemap.screens.SettingsScreen
 import com.f1rq.lifemap.screens.settingsScreens.SettingsNotificationsScreen
-import com.f1rq.lifemap.ui.screens.LocationPickerScreen
 import com.f1rq.lifemap.ui.theme.ActiveNavColor
 import com.f1rq.lifemap.ui.theme.InactiveNavColor
 import com.f1rq.lifemap.ui.theme.LifeMapTheme
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,8 +49,6 @@ class MainActivity : ComponentActivity() {
             LifeMapTheme {
                 val navController = rememberNavController()
                 val viewModel: EventViewModel = koinViewModel()
-
-                val showLocationPicker = viewModel.showLocationPicker.collectAsState().value
 
                 val view = LocalView.current
                 val darkTheme = !isSystemInDarkTheme()
@@ -67,7 +63,7 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry.value?.destination?.route
 
                 val routesWithBars = listOf("mapview", "listview")
-                val showBars = currentRoute in routesWithBars && !showLocationPicker
+                val showBars = currentRoute in routesWithBars
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     Scaffold(
@@ -172,29 +168,14 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    if (!showLocationPicker) {
-                        SuccessMessage(
-                            viewModel = viewModel,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .statusBarsPadding()
-                                .zIndex(999f)
-                        )
-                    }
 
-                    // Full-screen location picker overlay
-                    if (showLocationPicker) {
-                        LocationPickerScreen(
-                            onLocationPicked = { selectedLocation ->
-                                viewModel.setSelectedLocation(selectedLocation)
-                                viewModel.hideLocationPicker()
-                            },
-                            onCancel = {
-                                viewModel.hideLocationPicker()
-                            },
-                            initialLocation = viewModel.selectedLocation.collectAsState().value
-                        )
-                    }
+                    SuccessMessage(
+                        viewModel = viewModel,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .statusBarsPadding()
+                            .zIndex(999f)
+                    )
                 }
             }
         }

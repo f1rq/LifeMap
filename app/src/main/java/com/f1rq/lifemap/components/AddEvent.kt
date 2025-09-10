@@ -7,9 +7,12 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,12 +36,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.f1rq.lifemap.data.entity.Event
+import com.f1rq.lifemap.ui.screens.LocationPickerScreen
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
+import com.f1rq.lifemap.screens.MapView
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 
@@ -54,33 +60,62 @@ fun AddEvent(
     )
     val coroutineScope = rememberCoroutineScope()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
+    var showLocationPicker by remember { mutableStateOf(false) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState
-    ) {
-        AddEventSheetContent(
-            onDismiss = {
-                coroutineScope.launch {
-                    sheetState.hide()
-                    onDismiss()
+    // Fullscreen location picker using existing MapView
+    if (showLocationPicker) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .zIndex(Float.MAX_VALUE)
+        ) {
+            MapView(
+                navController = navController,
+                modifier = Modifier.fillMaxSize(),
+                viewModel = viewModel,
+                isLocationPickerMode = true,
+                onLocationPicked = { location ->
+                    viewModel.setSelectedLocation(location)
+                    showLocationPicker = false
+                },
+                onCancelLocationPicker = {
+                    showLocationPicker = false
+                },
+                initialPickerLocation = selectedLocation ?: currentLocation
+            )
+        }
+    }
+
+    // Bottom sheet (only show when location picker is not active)
+    if (!showLocationPicker) {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState
+        ) {
+            AddEventSheetContent(
+                onDismiss = {
+                    coroutineScope.launch {
+                        sheetState.hide()
+                        onDismiss()
+                    }
+                },
+                onCancel = {
+                    coroutineScope.launch {
+                        sheetState.hide()
+                        onDismiss()
+                    }
+                },
+                viewModel = viewModel,
+                currentLocation = selectedLocation ?: currentLocation,
+                onShowLocationPicker = {
+                    showLocationPicker = true
+                },
+                onLocationChanged = { location ->
+                    viewModel.setSelectedLocation(location)
                 }
-            },
-            onCancel = {
-                coroutineScope.launch {
-                    sheetState.hide()
-                    onDismiss()
-                }
-            },
-            viewModel = viewModel,
-            currentLocation = selectedLocation ?: currentLocation,
-            onShowLocationPicker = {
-                viewModel.showLocationPicker()
-            },
-            onLocationChanged = { location ->
-                viewModel.setSelectedLocation(location)
-            }
-        )
+            )
+        }
     }
 }
 
@@ -246,7 +281,5 @@ fun AddEventSheetContent(
                 )
             }
         }
-
-
     }
 }
