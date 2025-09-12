@@ -145,7 +145,8 @@ class MainActivity : ComponentActivity() {
                             composable("listview") {
                                 ListView(
                                     Modifier,
-                                    viewModel = viewModel
+                                    viewModel = viewModel,
+                                    navController = navController
                                 )
                             }
                             composable("settings") {

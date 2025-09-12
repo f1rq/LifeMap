@@ -38,6 +38,7 @@ import androidx.compose.ui.text.withStyle
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.components.AlertConfirmation
 import androidx.compose.ui.text.SpanStyle
+import androidx.navigation.NavController
 import com.f1rq.lifemap.R
 import com.f1rq.lifemap.components.AlertEditEvent
 import com.f1rq.lifemap.components.EventInfoSheet
@@ -45,7 +46,8 @@ import com.f1rq.lifemap.components.EventInfoSheet
 @Composable
 fun ListView(
     modifier: Modifier = Modifier,
-    viewModel: EventViewModel = koinViewModel()
+    viewModel: EventViewModel = koinViewModel(),
+    navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
@@ -118,7 +120,8 @@ fun ListView(
                             },
                             onEditClick = { updatedEvent ->
                                 viewModel.updateEvent(updatedEvent)
-                            }
+                            },
+                            navController = navController
                         )
                     }
                 }
@@ -142,7 +145,8 @@ private fun EventCard(
     event: Event,
     onEventClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    onEditClick: (Event) -> Unit
+    onEditClick: (Event) -> Unit,
+    navController: NavController
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -239,6 +243,7 @@ private fun EventCard(
         AlertEditEvent(
             onDismissRequest = { showEditDialog = false },
             event = event,
+            navController = navController,
             onConfirmation = { updatedEvent ->
                 onEditClick(updatedEvent)
                 showEditDialog = false

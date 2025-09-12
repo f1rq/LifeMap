@@ -235,7 +235,7 @@ fun AddEventSheetContent(
             )
         }
 
-        // Location Selection (unchanged)
+        // Location Selection
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
