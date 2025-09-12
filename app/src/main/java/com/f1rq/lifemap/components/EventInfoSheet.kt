@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import com.f1rq.lifemap.data.entity.Event
+import com.f1rq.lifemap.screens.formatLocationDisplay
 import com.f1rq.lifemap.ui.theme.MainTextColor
 import kotlinx.coroutines.launch
 
@@ -107,6 +108,23 @@ private fun EventInfoSheetContent(
                 )
                 Text (
                     text = event.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+
+                )
+            }
+        }
+        if (event.latitude != null && event.longitude != null) {
+            Column(
+                verticalArrangement =  Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Location",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MainTextColor
+                )
+                Text (
+                    text = formatLocationDisplay(event),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
 
