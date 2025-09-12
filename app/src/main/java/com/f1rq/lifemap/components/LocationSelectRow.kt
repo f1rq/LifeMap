@@ -15,12 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.f1rq.lifemap.data.entity.Event
+import com.f1rq.lifemap.screens.formatLocationDisplay
 import com.f1rq.lifemap.ui.theme.MainTextColor
 import org.osmdroid.util.GeoPoint
 
 @SuppressLint("DefaultLocale")
 @Composable
 fun LocationSelectRow(
+    event: Event,
     selectedLocation: GeoPoint?,
     onLocationSelected: (GeoPoint?) -> Unit,
     onPickLocationClick: () -> Unit,
@@ -57,7 +60,7 @@ fun LocationSelectRow(
 
         selectedLocation?.let { location ->
             Text(
-                text = "${String.format("%.4f", location.latitude)}, ${String.format("%.4f", location.longitude)}",
+                text = formatLocationDisplay(event),
                 style = MaterialTheme.typography.bodySmall,
                 color = MainTextColor,
                 modifier = Modifier.padding(top = 4.dp)
