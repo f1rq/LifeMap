@@ -178,12 +178,13 @@ private fun EventCard(
                     color = MainTextColor,
                     modifier = Modifier.padding(top = 2.dp)
                 )
-                if (event.description.isNotBlank()) {
+                // Add this after the description text block in EventCard
+                if (event.latitude != null && event.longitude != null) {
                     Text(
-                        text = event.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MainTextColor,
-                        modifier = Modifier.padding(top = 4.dp)
+                        text = formatLocationDisplay(event),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
             }
@@ -243,5 +244,14 @@ private fun EventCard(
                 showEditDialog = false
             }
         )
+    }
+}
+
+fun formatLocationDisplay(event: Event): String {
+    return when {
+        !event.locationName.isNullOrBlank() -> event.locationName
+        event.latitude != null && event.longitude != null ->
+            "Lat: ${String.format("%.4f", event.latitude)}, Lng: ${String.format("%.4f", event.longitude)}"
+        else -> "No location"
     }
 }
