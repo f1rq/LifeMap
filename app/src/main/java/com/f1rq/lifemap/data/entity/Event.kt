@@ -12,5 +12,6 @@ data class Event(
     val description: String,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val locationName: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )
