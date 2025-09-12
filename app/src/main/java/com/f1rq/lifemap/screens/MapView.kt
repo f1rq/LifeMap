@@ -23,6 +23,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -51,14 +55,13 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.f1rq.lifemap.components.AddEvent
 import com.f1rq.lifemap.components.AddEventCard
-import com.f1rq.lifemap.ui.screens.NominatimAPI
-import com.f1rq.lifemap.ui.screens.PlaceSuggestion
-import com.f1rq.lifemap.ui.screens.PlaceCategory
+import com.f1rq.lifemap.api.NominatimAPI
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.ui.theme.MainTextColor
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
@@ -72,6 +75,27 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import org.osmdroid.views.MapView as OSMMapView
 import java.io.File
+
+data class PlaceSuggestion(
+    val name: String,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val category: PlaceCategory
+)
+
+enum class PlaceCategory {
+    RESTAURANT,
+    FAST_FOOD,
+    CAFE,
+    SHOP,
+    GAS_STATION,
+    HOSPITAL,
+    SCHOOL,
+    HOTEL,
+    BANK,
+    UNKNOWN
+}
 
 @Composable
 fun MapView(
@@ -111,7 +135,7 @@ fun MapView(
     fun searchPlaces(query: String) {
         if (!isLocationPickerMode || nominatimAPI == null) return
 
-        if (query.length < 2) {
+        if (query.length < 3) {
             placeSuggestions = emptyList()
             showSuggestions = false
             isSearching = false
@@ -119,18 +143,49 @@ fun MapView(
         }
 
         isSearching = true
+
         coroutineScope.launch {
             try {
-                val suggestions = withContext(Dispatchers.IO) {
-                    searchWithNominatim(nominatimAPI, query, currentUserLocation)
+                delay(300)
+
+                // Check if query is still current after delay
+                if (searchQuery != query) {
+                    isSearching = false
+                    return@launch
                 }
-                placeSuggestions = suggestions
-                showSuggestions = suggestions.isNotEmpty()
-                isSearching = false
+
+                val results = withContext(Dispatchers.IO) {
+                    nominatimAPI.searchPlaces(
+                        query = query,
+                        format = "json",
+                        limit = 8,
+                        acceptLanguage = "en"
+                    )
+                }
+
+                val suggestions = results.map { place ->
+                    PlaceSuggestion(
+                        name = extractPlaceName(place.display_name),
+                        address = place.display_name,
+                        latitude = place.lat.toDouble(),
+                        longitude = place.lon.toDouble(),
+                        category = determinePlaceCategory(place.type, place.category)
+                    )
+                }.distinctBy { "${it.name}-${it.latitude}-${it.longitude}" }
+
+                // Only update if this is still the current search
+                if (searchQuery == query) {
+                    placeSuggestions = suggestions
+                    showSuggestions = suggestions.isNotEmpty()
+                    isSearching = false
+                }
             } catch (e: Exception) {
-                placeSuggestions = emptyList()
-                showSuggestions = false
-                isSearching = false
+                // Only update if this is still the current search
+                if (searchQuery == query) {
+                    placeSuggestions = emptyList()
+                    showSuggestions = false
+                    isSearching = false
+                }
             }
         }
     }
@@ -147,10 +202,8 @@ fun MapView(
                         if (isLocationPickerMode) {
                             selectedPickerLocation = userLocation
                             updateMapMarker(mapView, userLocation, context, true)
-                        } else {
-                            mapView?.controller?.animateTo(userLocation)
-                            mapView?.controller?.setZoom(15.0)
                         }
+                        mapView?.controller?.animateTo(userLocation)
                     }
                 }
             } catch (e: SecurityException) {
@@ -206,7 +259,6 @@ fun MapView(
                         currentUserLocation = userLocation
                         if (!isLocationPickerMode) {
                             mapView?.controller?.animateTo(userLocation)
-                            mapView?.controller?.setZoom(15.0)
                         }
                     }
                 }
@@ -233,9 +285,9 @@ fun MapView(
             ) {
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                        searchPlaces(it)
+                    onValueChange = { newQuery ->
+                        searchQuery = newQuery
+                        searchPlaces(newQuery)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -248,19 +300,17 @@ fun MapView(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Icon(Icons.Default.Search, "Search")
+                            Icon(Icons.Default.Search, contentDescription = "Search")
                         }
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    searchQuery = ""
-                                    placeSuggestions = emptyList()
-                                    showSuggestions = false
-                                }
-                            ) {
-                                Icon(Icons.Default.Clear, "Clear")
+                            IconButton(onClick = {
+                                searchQuery = ""
+                                placeSuggestions = emptyList()
+                                showSuggestions = false
+                            }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear")
                             }
                         }
                     },
@@ -293,27 +343,16 @@ fun MapView(
                     if (isLocationPickerMode) {
                         // Add initial marker for picker mode
                         selectedPickerLocation?.let { location ->
-                            val marker = Marker(this).apply {
-                                position = location
-                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                title = "Selected Location"
-                            }
-                            overlays.add(marker)
+                            updateMapMarker(this, location, context, true)
                         }
 
                         // Add tap listener for picker mode
                         setOnTouchListener { view, event ->
                             if (event.action == MotionEvent.ACTION_UP) {
-                                view.performClick()
-                                val projection = projection
-                                val geoPoint = projection.fromPixels(
-                                    event.x.toInt(),
-                                    event.y.toInt()
-                                ) as GeoPoint
-
+                                val projection = this.projection
+                                val geoPoint = projection.fromPixels(event.x.toInt(), event.y.toInt()) as GeoPoint
                                 selectedPickerLocation = geoPoint
                                 updateMapMarker(this, geoPoint, context, true)
-                                showSuggestions = false
                             }
                             false
                         }
@@ -342,10 +381,11 @@ fun MapView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .padding(top = 140.dp)
+                    .padding(top = 80.dp)
                     .heightIn(max = 400.dp)
                     .zIndex(8f),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MainBG)
             ) {
                 LazyColumn {
                     items(placeSuggestions) { suggestion ->
@@ -355,7 +395,11 @@ fun MapView(
                                 selectedPickerLocation = GeoPoint(suggestion.latitude, suggestion.longitude)
                                 updateMapMarker(mapView, selectedPickerLocation!!, context, true)
                                 showSuggestions = false
+                                placeSuggestions = emptyList()
                                 searchQuery = suggestion.name
+                                coroutineScope.launch {
+                                    viewModel.updateLocationName(suggestion.name)
+                                }
                             }
                         )
                     }
@@ -368,7 +412,7 @@ fun MapView(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
-                .padding(top = if (isLocationPickerMode) 100.dp else 16.dp), // Adjust top padding for picker mode
+                .padding(top = if (isLocationPickerMode) 100.dp else 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Map zoom in button
@@ -380,8 +424,9 @@ fun MapView(
                 containerColor = MainBG
             ) {
                 Icon(
-                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.add_24px),
-                    contentDescription = "Zoom In"
+                    Icons.Default.Add,
+                    contentDescription = "Zoom In",
+                    tint = MainTextColor
                 )
             }
 
@@ -394,8 +439,9 @@ fun MapView(
                 containerColor = MainBG
             ) {
                 Icon(
-                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.remove_24px),
-                    contentDescription = "Zoom Out"
+                    Icons.Default.Remove,
+                    contentDescription = "Zoom Out",
+                    tint = MainTextColor
                 )
             }
 
@@ -408,8 +454,9 @@ fun MapView(
                 containerColor = MainBG
             ) {
                 Icon(
-                    painter = androidx.compose.ui.res.painterResource(id = com.f1rq.lifemap.R.drawable.location_searching_24px),
-                    contentDescription = "My Location"
+                    Icons.Default.MyLocation,
+                    contentDescription = "My Location",
+                    tint = MainTextColor
                 )
             }
         }
@@ -421,8 +468,7 @@ fun MapView(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .zIndex(7f),
+                        .padding(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MainBG)
                 ) {
@@ -430,51 +476,28 @@ fun MapView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Back button
-                        IconButton(onClick = { onCancelLocationPicker?.invoke() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = MainTextColor
-                            )
-                        }
-
-                        // Location info (centered)
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Selected Location",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MainTextColor
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Lat: ${String.format("%.6f", location.latitude)}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MainTextColor
-                            )
-                            Text(
-                                text = "Lng: ${String.format("%.6f", location.longitude)}",
+                                text = "${String.format("%.6f", location.latitude)}, ${String.format("%.6f", location.longitude)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MainTextColor
                             )
                         }
-
-                        // Done button
-                        TextButton(
-                            onClick = {
-                                selectedPickerLocation?.let { onLocationPicked?.invoke(it) }
+                        Row {
+                            TextButton(onClick = { onCancelLocationPicker?.invoke() }) {
+                                Text("Cancel")
                             }
-                        ) {
-                            Text(
-                                text = "Done",
-                                color = MainBG,
-                                style = MaterialTheme.typography.labelLarge
-                            )
+                            TextButton(onClick = { onLocationPicked?.invoke(location) }) {
+                                Text("Confirm")
+                            }
                         }
                     }
                 }
@@ -518,34 +541,25 @@ fun PlaceSuggestionItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = when (suggestion.category) {
-                PlaceCategory.RESTAURANT -> Icons.Default.Search
-                PlaceCategory.FAST_FOOD -> Icons.Default.Search
-                PlaceCategory.CAFE -> Icons.Default.Search
-                PlaceCategory.SHOP -> Icons.Default.Search
-                PlaceCategory.GAS_STATION -> Icons.Default.Search
-                PlaceCategory.HOSPITAL -> Icons.Default.Search
-                PlaceCategory.SCHOOL -> Icons.Default.Search
-                PlaceCategory.HOTEL -> Icons.Default.Search
-                PlaceCategory.BANK -> Icons.Default.Search
-                PlaceCategory.UNKNOWN -> Icons.Default.Search
-            },
+            imageVector = Icons.Default.Search,
             contentDescription = null,
             modifier = Modifier.padding(end = 12.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MainTextColor
         )
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = suggestion.name,
                 style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MainTextColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = suggestion.address,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MainTextColor,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -569,28 +583,24 @@ private fun updateMapMarker(mapView: OSMMapView?, location: GeoPoint, context: C
     }
 }
 
-private suspend fun searchWithNominatim(
-    nominatimAPI: NominatimAPI,
-    query: String,
-    userLocation: GeoPoint?
-): List<PlaceSuggestion> {
-    return try {
-        val results = nominatimAPI.searchPlaces(
-            query = query,
-            lat = userLocation?.latitude,
-            lon = userLocation?.longitude
-        )
-
-        results.map { place ->
-            PlaceSuggestion(
-                name = place.display_name.split(",").first().trim(),
-                address = place.display_name,
-                latitude = place.lat.toDouble(),
-                longitude = place.lon.toDouble(),
-                category = PlaceCategory.UNKNOWN
-            )
-        }.distinctBy { "${it.name}-${it.latitude}-${it.longitude}" }
-    } catch (e: Exception) {
-        emptyList()
+private fun determinePlaceCategory(type: String?, category: String?): PlaceCategory {
+    return when {
+        type?.contains("restaurant", true) == true -> PlaceCategory.RESTAURANT
+        type?.contains("cafe", true) == true -> PlaceCategory.CAFE
+        type?.contains("shop", true) == true -> PlaceCategory.SHOP
+        type?.contains("hospital", true) == true -> PlaceCategory.HOSPITAL
+        type?.contains("school", true) == true -> PlaceCategory.SCHOOL
+        type?.contains("hotel", true) == true -> PlaceCategory.HOTEL
+        type?.contains("bank", true) == true -> PlaceCategory.BANK
+        category?.contains("amenity", true) == true -> PlaceCategory.RESTAURANT
+        else -> PlaceCategory.UNKNOWN
     }
+}
+
+private fun extractPlaceName(displayName: String): String {
+    val parts = displayName.split(",")
+    return when {
+        parts.size >= 2 -> "${parts[0].trim()}, ${parts[1].trim()}"
+        else -> parts[0].trim()
+    }.take(50) // Limit length
 }

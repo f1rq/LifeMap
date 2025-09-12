@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.f1rq.lifemap.data.entity.Event
-import com.f1rq.lifemap.ui.screens.LocationPickerScreen
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -47,6 +46,12 @@ import androidx.navigation.NavController
 import com.f1rq.lifemap.screens.MapView
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
+import com.f1rq.lifemap.api.NominatimAPI
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 @Composable
 fun AddEvent(
@@ -77,6 +82,24 @@ fun AddEvent(
                 isLocationPickerMode = true,
                 onLocationPicked = { location ->
                     viewModel.setSelectedLocation(location)
+                    // Fetch location name
+                    coroutineScope.launch {
+                        try {
+                            val nominatimAPI = Retrofit.Builder()
+                                .baseUrl("https://nominatim.openstreetmap.org/")
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build()
+                                .create(NominatimAPI::class.java)
+
+                            val locationName = withContext(Dispatchers.IO) {
+                                val result = nominatimAPI.reverseGeocode(location.latitude, location.longitude)
+                                extractPlaceName(result.display_name)
+                            }
+                            viewModel.updateLocationName(locationName)
+                        } catch (e: Exception) {
+                            viewModel.updateLocationName(null)
+                        }
+                    }
                     showLocationPicker = false
                 },
                 onCancelLocationPicker = {
@@ -128,19 +151,19 @@ fun AddEventSheetContent(
     onShowLocationPicker: () -> Unit,
     onLocationChanged: (GeoPoint?) -> Unit
 ) {
-    var eventName by remember { mutableStateOf("") }
-    var eventDate by remember { mutableStateOf("") }
-    var eventDesc by remember { mutableStateOf("") }
-
+    // Use viewModel form state instead of local state
+    val formState by viewModel.formState.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
     val eventLocation = selectedLocation ?: currentLocation
-
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    val isFormValid = eventName.isNotBlank()
+    val isFormValid = formState.eventName.isNotBlank()
 
     LaunchedEffect(uiState.addEventSuccess) {
         if (uiState.addEventSuccess) {
+            viewModel.clearFormState()
+            viewModel.setSelectedLocation(null)
             onDismiss()
         }
     }
@@ -170,8 +193,10 @@ fun AddEventSheetContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             TextInputRow(
-                value = eventName,
-                onValueChange = { eventName = it },
+                value = formState.eventName,
+                onValueChange = {
+                    viewModel.updateFormState(it, formState.eventDate, formState.eventDesc)
+                },
                 label = "Event Name",
                 maxLength = 30,
                 modifier = Modifier.weight(1f),
@@ -185,8 +210,10 @@ fun AddEventSheetContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             DateSelectRow(
-                selectedDate = eventDate,
-                onDateSelected = { eventDate = it },
+                selectedDate = formState.eventDate,
+                onDateSelected = {
+                    viewModel.updateFormState(formState.eventName, it, formState.eventDesc)
+                },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -197,8 +224,10 @@ fun AddEventSheetContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             TextInputRow(
-                value = eventDesc,
-                onValueChange = { eventDesc = it },
+                value = formState.eventDesc,
+                onValueChange = {
+                    viewModel.updateFormState(formState.eventName, formState.eventDate, it)
+                },
                 label = "Description",
                 maxLength = 100,
                 modifier = Modifier.weight(1f),
@@ -206,12 +235,20 @@ fun AddEventSheetContent(
             )
         }
 
-        // Location Selection
+        // Location Selection (unchanged)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             LocationSelectRow(
+                event = Event(
+                    name = formState.eventName,
+                    date = formState.eventDate,
+                    description = formState.eventDesc,
+                    latitude = eventLocation?.latitude,
+                    longitude = eventLocation?.longitude,
+                    locationName = formState.locationName
+                ),
                 selectedLocation = eventLocation,
                 onLocationSelected = { newLocation ->
                     viewModel.setSelectedLocation(newLocation)
@@ -223,14 +260,39 @@ fun AddEventSheetContent(
         // Save Button
         Button(
             onClick = {
-                val event = Event(
-                    name = eventName,
-                    date = eventDate,
-                    description = eventDesc,
-                    latitude = eventLocation?.latitude,
-                    longitude = eventLocation?.longitude
-                )
-                viewModel.addEvent(event)
+                coroutineScope.launch {
+                    viewModel.updateUiState(isAddingEvent = true)
+
+                    val locationName = if (eventLocation != null) {
+                        try {
+                            val nominatimAPI = Retrofit.Builder()
+                                .baseUrl("https://nominatim.openstreetmap.org/")
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build()
+                                .create(NominatimAPI::class.java)
+
+                            withContext(Dispatchers.IO) {
+                                val result = nominatimAPI.reverseGeocode(
+                                    eventLocation.latitude,
+                                    eventLocation.longitude
+                                )
+                                extractPlaceName(result.display_name)
+                            }
+                        } catch (e: Exception) {
+                            null
+                        }
+                    } else null
+
+                    val event = Event(
+                        name = formState.eventName,
+                        date = formState.eventDate,
+                        description = formState.eventDesc,
+                        latitude = eventLocation?.latitude,
+                        longitude = eventLocation?.longitude,
+                        locationName = locationName
+                    )
+                    viewModel.addEvent(event)
+                }
             },
             enabled = isFormValid && !uiState.isAddingEvent,
             modifier = Modifier
@@ -250,13 +312,16 @@ fun AddEventSheetContent(
 
         // Cancel Button
         OutlinedButton(
-            onClick = onCancel,
+            onClick = {
+                viewModel.clearFormState()
+                viewModel.setSelectedLocation(null)
+                onCancel()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Cancel")
         }
 
-        // Error Message Card (only show errors in the sheet)
         AnimatedVisibility(
             visible = uiState.error != null,
             enter = fadeIn() + expandVertically(),
@@ -282,4 +347,12 @@ fun AddEventSheetContent(
             }
         }
     }
+}
+
+private fun extractPlaceName(displayName: String): String {
+    val parts = displayName.split(",")
+    return when {
+        parts.size >= 2 -> "${parts[0].trim()}, ${parts[1].trim()}"
+        else -> parts[0].trim()
+    }.take(50)
 }
