@@ -34,12 +34,38 @@ class EventViewModel(
     private val _selectedLocation = MutableStateFlow<GeoPoint?>(null)
     val selectedLocation = _selectedLocation.asStateFlow()
 
+    fun updateUiState(isAddingEvent: Boolean) {
+        _operationState.value = _operationState.value.copy(isAddingEvent = isAddingEvent)
+    }
+
     fun setSelectedLocation(location: GeoPoint?) {
         _selectedLocation.value = location
     }
 
     fun getCurrentLocation(): GeoPoint? {
         return _selectedLocation.value
+    }
+
+    private val _formState = MutableStateFlow(FormState())
+    val formState = _formState.asStateFlow()
+
+    data class FormState(
+        val eventName: String = "",
+        val eventDate: String = "",
+        val eventDesc: String = "",
+        val locationName: String? = null
+    )
+
+    fun updateFormState(name: String, date: String, desc: String, locationName: String? = null) {
+        _formState.value = FormState(name, date, desc, locationName)
+    }
+
+    fun updateLocationName(locationName: String?) {
+        _formState.value = _formState.value.copy(locationName = locationName)
+    }
+
+    fun clearFormState() {
+        _formState.value = FormState()
     }
 
     val uiState: StateFlow<EventUiState> = combine(
