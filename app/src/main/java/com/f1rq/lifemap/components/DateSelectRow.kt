@@ -58,17 +58,17 @@ fun DateSelectRow(
                 disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
-            supportingText = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = "Select date",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            },
+//            supportingText = {
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.End
+//                ) {
+//                    Text(
+//                        text = "Select date",
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                    )
+//                }
+//            },
             isError = isError,
             interactionSource = interactionSource,
             modifier = Modifier.fillMaxWidth()

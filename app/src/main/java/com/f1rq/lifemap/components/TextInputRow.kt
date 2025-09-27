@@ -30,17 +30,17 @@ fun TextInputRow(
             }
         },
         label = { Text(if (required) "$label*" else label) },
-        supportingText = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = "${value.length}/$maxLength",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
+//        supportingText = {
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.End
+//            ) {
+//                Text(
+//                    text = "${value.length}/$maxLength",
+//                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//            }
+//        },
         isError = isError,
         modifier = modifier
     )
