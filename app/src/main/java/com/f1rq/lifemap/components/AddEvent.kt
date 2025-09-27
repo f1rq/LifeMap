@@ -7,6 +7,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -199,20 +200,22 @@ fun AddEventSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedTextField(
-                        value = searchQuery,
+                        value = selectedLocationName ?: searchQuery,
                         onValueChange = {
-                            searchQuery = it
-                            if (it.isEmpty()) {
+                            if (selectedLocationName != null) {
                                 selectedLocation = null
                                 selectedLocationName = null
+                                searchQuery = it
+                            } else {
+                                searchQuery = it
                             }
                         },
                         label = { Text("Search Location") },
                         trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
+                            if (searchQuery.isNotEmpty() || selectedLocationName != null) {
                                 IconButton(
                                     onClick = {
                                         searchQuery = ""
@@ -225,38 +228,9 @@ fun AddEventSheetContent(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        readOnly = selectedLocationName != null
                     )
-
-                    // Show selected location
-                    selectedLocationName?.let { locationName ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MainBG,
-                            ),
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.LocationOn,
-                                    contentDescription = "Selected Location",
-                                    tint = MainTextColor
-                                )
-                                Text(
-                                    text = locationName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MainTextColor,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
                 }
             }
 
