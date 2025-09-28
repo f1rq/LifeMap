@@ -8,8 +8,9 @@ data class Event(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
-    val date: String,
-    val description: String,
+    val date: String?,
+    val description: String?,
+    val category: String?,
     val latitude: Double? = null,
     val longitude: Double? = null,
     val locationName: String? = null,
