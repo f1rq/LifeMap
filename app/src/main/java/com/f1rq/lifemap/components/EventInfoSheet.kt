@@ -52,7 +52,7 @@ fun EventInfoSheet(
 @Composable
 private fun EventInfoSheetContent(
     event: Event,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     Column(
         modifier = Modifier

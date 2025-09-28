@@ -1,13 +1,16 @@
 package com.f1rq.lifemap.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -121,7 +124,8 @@ fun ListView(
                             onEditClick = { updatedEvent ->
                                 viewModel.updateEvent(updatedEvent)
                             },
-                            navController = navController
+                            navController = navController,
+                            viewModel = viewModel
                         )
                     }
                 }
@@ -146,7 +150,8 @@ private fun EventCard(
     onEventClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onEditClick: (Event) -> Unit,
-    navController: NavController
+    navController: NavController,
+    viewModel: EventViewModel = koinViewModel()
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -171,11 +176,35 @@ private fun EventCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = event.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = event.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+
+                    if (!event.category.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box (
+                            modifier = Modifier
+                                .background(
+                                    color = viewModel.getCategoryColor(event.category),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = event.category,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MainTextColor
+                            )
+                        }
+                    }
+                }
                 if (!event.date.isNullOrBlank()) {
                     Text(
                         text = event.date,

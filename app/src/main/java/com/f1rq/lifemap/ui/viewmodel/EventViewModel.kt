@@ -1,5 +1,6 @@
 package com.f1rq.lifemap.ui.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -59,6 +60,16 @@ class EventViewModel(
         "Other"
     )
 
+    val categoryColors = mapOf(
+        "Work" to Color(0xFF66B3FC),       // Blue
+        "Personal" to Color(0xFF5FD964),   // Green
+        "School" to Color(0xFFF8BA63),     // Orange
+        "Travel" to Color(0xFFE65DFF),     // Purple
+        "Health" to Color(0xFFF85346),     // Red
+        "Family" to Color(0xFFF63A7A),     // Pink
+        "Other" to Color(0xFF8EB5C9)       // Blue Grey
+    )
+
     data class FormState(
         val eventName: String = "",
         val eventDate: String? = "",
@@ -66,6 +77,10 @@ class EventViewModel(
         val locationName: String? = null,
         val eventCategory: String? = null
     )
+
+    fun getCategoryColor(category: String?): Color {
+        return categoryColors[category] ?: Color(0xFF8EB5C9) // Default to Blue Grey
+    }
 
     fun updateFormState(name: String, date: String?, desc: String?, locationName: String? = null, category: String? = null) {
         _formState.value = FormState(name, date, desc, locationName, category)

@@ -315,7 +315,22 @@ fun AddEventSheetContent(
                     ) {
                         viewModel.eventCategories.forEach { category ->
                             DropdownMenuItem(
-                                text = { Text(category) },
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .background(
+                                                    color = viewModel.getCategoryColor(category),
+                                                    shape = androidx.compose.foundation.shape.CircleShape
+                                                )
+                                        )
+                                        Text(category)
+                                    }
+                                },
                                 onClick = {
                                     viewModel.updateFormState(
                                         formState.eventName,
