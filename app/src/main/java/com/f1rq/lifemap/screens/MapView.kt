@@ -19,6 +19,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,11 +40,12 @@ import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import com.google.android.gms.location.LocationServices
 import org.koin.androidx.compose.koinViewModel
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.MapView as OSMMapView
+import org.osmdroid.tileprovider.tilesource.XYTileSource
+import org.osmdroid.views.overlay.Marker
 import java.io.File
 
 @Composable
@@ -52,12 +54,20 @@ fun MapView(
     modifier: Modifier = Modifier,
     viewModel: EventViewModel = koinViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var showSheet by remember { mutableStateOf(false) }
     var mapView by remember { mutableStateOf<OSMMapView?>(null) }
     var hasLocationPermission by remember { mutableStateOf(false) }
     var currentUserLocation by remember { mutableStateOf<GeoPoint?>(null)}
 
     val context = LocalContext.current
+
+    val positronTileSource = XYTileSource (
+        "CartoDB_Positron",
+        1, 19, 256, ".png",
+        arrayOf("https://a.basemaps.cartocdn.com/light_all/")
+    )
 
     // Function to center map on user location
     fun centerOnUserLocation() {
@@ -137,7 +147,7 @@ fun MapView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 OSMMapView(ctx).apply {
-                    setTileSource(TileSourceFactory.MAPNIK)
+                    setTileSource(positronTileSource)
                     setMultiTouchControls(true)
                     isTilesScaledToDpi = true
 
@@ -159,8 +169,25 @@ fun MapView(
                     locationOverlay.enableMyLocation()
                     locationOverlay.enableFollowLocation()
                     view.overlays.add(locationOverlay)
-                    view.invalidate()
                 }
+
+                view.overlays.removeAll { it is Marker }
+
+                uiState.events.forEach { event ->
+                    if (event.latitude != null && event.longitude != null) {
+                        val marker = Marker(view)
+                        marker.position = GeoPoint(event.latitude, event.longitude)
+                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        marker.title = event.name
+                        marker.snippet = event.description
+
+                        marker.icon = ContextCompat.getDrawable(context, com.f1rq.lifemap.R.drawable.location_on_36px)
+
+                        view.overlays.add(marker)
+                    }
+                }
+
+                view.invalidate()
             }
         )
 
