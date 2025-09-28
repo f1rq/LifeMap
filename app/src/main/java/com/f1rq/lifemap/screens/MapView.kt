@@ -1,8 +1,8 @@
 package com.f1rq.lifemap.screens
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.location.Location
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -49,8 +50,9 @@ import org.osmdroid.views.MapView as OSMMapView
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.views.overlay.Marker
 import java.io.File
-import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.DrawableCompat
 
+@SuppressLint("UseKtx")
 @Composable
 fun MapView(
     navController: NavController,
@@ -160,35 +162,21 @@ fun MapView(
                     mapController.setZoom(15.0)
                     mapController.setCenter(GeoPoint(48.8566, 2.3522))
 
+                    // Initialize location overlay once during factory
+                    if (hasLocationPermission) {
+                        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), this)
+                        locationOverlay.setPersonIcon(null)
+                        locationOverlay.setDirectionIcon(null)
+                        locationOverlay.enableMyLocation()
+                        locationOverlay.enableFollowLocation()
+                        overlays.add(locationOverlay)
+                    }
+
                     post { invalidate() }
                     mapView = this
                 }
             },
             update = { view ->
-                if (hasLocationPermission) {
-                    view.overlays.removeAll { it is MyLocationNewOverlay }
-
-                    val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), view)
-
-                    // Convert drawable to bitmap for person icon
-                    val drawable = ContextCompat.getDrawable(context, R.drawable.radio_button_checked_24px)
-                    drawable?.let {
-                        val bitmap = createBitmap(it.intrinsicWidth, it.intrinsicHeight)
-                        val canvas = android.graphics.Canvas(bitmap)
-                        it.setBounds(0, 0, canvas.width, canvas.height)
-                        it.draw(canvas)
-
-                        locationOverlay.setPersonIcon(bitmap)
-                        locationOverlay.setPersonAnchor(0.5f, 0.5f)
-                    }
-
-                    locationOverlay.setDirectionIcon(null)
-
-                    locationOverlay.enableMyLocation()
-                    locationOverlay.enableFollowLocation()
-                    view.overlays.add(locationOverlay)
-                }
-
                 view.overlays.removeAll { it is Marker }
 
                 uiState.events.forEach { event ->
@@ -199,12 +187,16 @@ fun MapView(
                         marker.title = event.name
                         marker.snippet = event.description
 
-                        marker.icon = ContextCompat.getDrawable(context, R.drawable.location_on_36px)
+                        val drawable = ContextCompat.getDrawable(context, R.drawable.location_on_36px)?.mutate()
+                        drawable?.let {
+                            val categoryColor = viewModel.getCategoryColor(event.category)
+                            DrawableCompat.setTint(it, categoryColor.toArgb())
+                            marker.icon = it
+                        }
 
                         view.overlays.add(marker)
                     }
                 }
-
                 view.invalidate()
             }
         )
