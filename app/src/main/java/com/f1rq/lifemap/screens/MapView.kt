@@ -2,6 +2,7 @@ package com.f1rq.lifemap.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +33,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.f1rq.lifemap.R
 import com.f1rq.lifemap.components.AddEventCard
 import com.f1rq.lifemap.components.AddEvent
 import com.f1rq.lifemap.ui.theme.MainBG
@@ -47,6 +49,7 @@ import org.osmdroid.views.MapView as OSMMapView
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.views.overlay.Marker
 import java.io.File
+import androidx.core.graphics.createBitmap
 
 @Composable
 fun MapView(
@@ -166,6 +169,21 @@ fun MapView(
                     view.overlays.removeAll { it is MyLocationNewOverlay }
 
                     val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), view)
+
+                    // Convert drawable to bitmap for person icon
+                    val drawable = ContextCompat.getDrawable(context, R.drawable.radio_button_checked_24px)
+                    drawable?.let {
+                        val bitmap = createBitmap(it.intrinsicWidth, it.intrinsicHeight)
+                        val canvas = android.graphics.Canvas(bitmap)
+                        it.setBounds(0, 0, canvas.width, canvas.height)
+                        it.draw(canvas)
+
+                        locationOverlay.setPersonIcon(bitmap)
+                        locationOverlay.setPersonAnchor(0.5f, 0.5f)
+                    }
+
+                    locationOverlay.setDirectionIcon(null)
+
                     locationOverlay.enableMyLocation()
                     locationOverlay.enableFollowLocation()
                     view.overlays.add(locationOverlay)
@@ -181,7 +199,7 @@ fun MapView(
                         marker.title = event.name
                         marker.snippet = event.description
 
-                        marker.icon = ContextCompat.getDrawable(context, com.f1rq.lifemap.R.drawable.location_on_36px)
+                        marker.icon = ContextCompat.getDrawable(context, R.drawable.location_on_36px)
 
                         view.overlays.add(marker)
                     }
