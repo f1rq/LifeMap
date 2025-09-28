@@ -23,9 +23,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -41,8 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.f1rq.lifemap.data.entity.Event
-import com.f1rq.lifemap.ui.theme.MainBG
-import com.f1rq.lifemap.ui.theme.MainTextColor
 import com.f1rq.lifemap.ui.viewmodel.EventViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
@@ -50,6 +53,7 @@ import org.osmdroid.util.GeoPoint
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertEditEvent(
     onDismissRequest: () -> Unit,
@@ -59,6 +63,8 @@ fun AlertEditEvent(
     viewModel: EventViewModel = koinViewModel()
 ) {
     var editedEvent by remember { mutableStateOf(event) }
+
+    var expanded by remember { mutableStateOf(false) }
 
     var searchQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<NominatimSearchResult>>(emptyList()) }
@@ -176,17 +182,54 @@ fun AlertEditEvent(
                     )
 
                     DateSelectRow(
-                        selectedDate = editedEvent.date,
+                        selectedDate = editedEvent.date ?: "", // Handle nullable date
                         onDateSelected = { editedEvent = editedEvent.copy(date = it) }
                     )
 
                     TextInputRow(
-                        value = editedEvent.description,
+                        value = editedEvent.description ?: "", // Handle nullable description
                         onValueChange = { editedEvent = editedEvent.copy(description = it) },
                         label = "Description",
                         maxLength = 100,
                         required = false
                     )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = editedEvent.category ?: "",
+                                onValueChange = { },
+                                readOnly = true,
+                                label = { Text("Category") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                viewModel.eventCategories.forEach { category ->
+                                    DropdownMenuItem(
+                                        text = { Text(category) },
+                                        onClick = {
+                                            editedEvent = editedEvent.copy(category = category)
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Search results overlay

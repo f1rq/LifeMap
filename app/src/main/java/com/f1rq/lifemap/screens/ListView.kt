@@ -176,13 +176,14 @@ private fun EventCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = event.date,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MainTextColor,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-                // Add this after the description text block in EventCard
+                if (!event.date.isNullOrBlank()) {
+                    Text(
+                        text = event.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MainTextColor,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
                 if (event.latitude != null && event.longitude != null) {
                     Text(
                         text = formatLocationDisplay(event),

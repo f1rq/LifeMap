@@ -36,6 +36,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -130,11 +134,13 @@ fun AddEventSheetContent(
     var selectedLocation by remember { mutableStateOf<GeoPoint?>(null) }
     var selectedLocationName by remember { mutableStateOf<String?>(null) }
 
+    var expanded by remember { mutableStateOf(false) }
+
     val nominatimAPI = remember {
         val okHttpClient = okhttp3.OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .addHeader("User-Agent", "LifeMapApp/1.0 (your-email@example.com)")
+                    .addHeader("User-Agent", "LifeMapApp/1.0 (f.czudaj@tutanota.com)")
                     .build()
                 chain.proceed(request)
             }
@@ -257,7 +263,7 @@ fun AddEventSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 DateSelectRow(
-                    selectedDate = formState.eventDate,
+                    selectedDate = formState.eventDate ?: "",
                     onDateSelected = {
                         viewModel.updateFormState(formState.eventName, it, formState.eventDesc)
                     },
@@ -271,7 +277,7 @@ fun AddEventSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TextInputRow(
-                    value = formState.eventDesc,
+                    value = formState.eventDesc ?: "",
                     onValueChange = {
                         viewModel.updateFormState(formState.eventName, formState.eventDate, it)
                     },
@@ -280,6 +286,50 @@ fun AddEventSheetContent(
                     modifier = Modifier.weight(1f),
                     required = false
                 )
+            }
+
+            // Category Dropdown (Optional)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    OutlinedTextField(
+                        value = formState.eventCategory ?: "",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                        modifier = Modifier
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        viewModel.eventCategories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category) },
+                                onClick = {
+                                    viewModel.updateFormState(
+                                        formState.eventName,
+                                        formState.eventDate,
+                                        formState.eventDesc,
+                                        formState.locationName,
+                                        category
+                                    )
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             // Save Button
@@ -292,6 +342,7 @@ fun AddEventSheetContent(
                             name = formState.eventName,
                             date = formState.eventDate,
                             description = formState.eventDesc,
+                            category = formState.eventCategory,
                             latitude = selectedLocation?.latitude,
                             longitude = selectedLocation?.longitude,
                             locationName = selectedLocationName

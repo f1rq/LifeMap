@@ -67,14 +67,14 @@ private fun EventInfoSheetContent(
         )
 
         Column(
-            verticalArrangement =  Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "Name",
                 style = MaterialTheme.typography.labelMedium,
                 color = MainTextColor
             )
-            Text (
+            Text(
                 text = event.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold
@@ -82,38 +82,58 @@ private fun EventInfoSheetContent(
             )
         }
 
-        Column(
-            verticalArrangement =  Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Date",
-                style = MaterialTheme.typography.labelMedium,
-                color = MainTextColor
-            )
-            Text (
-                text = event.date,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-
-            )
-        }
-        if (event.description.isNotBlank()) {
+        if (!event.date.isNullOrBlank()) {
             Column(
-                verticalArrangement =  Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Date",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MainTextColor
+                )
+                Text(
+                    text = event.date,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+
+        if (!event.description.isNullOrBlank()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = "Description",
                     style = MaterialTheme.typography.labelMedium,
                     color = MainTextColor
                 )
-                Text (
+                Text(
                     text = event.description,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
-
                 )
             }
         }
+
+        if (!event.category.isNullOrBlank()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Category",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MainTextColor
+                )
+                Text(
+                    text = event.category,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
         if (event.latitude != null && event.longitude != null) {
             Column(
                 verticalArrangement =  Arrangement.spacedBy(8.dp)

@@ -49,15 +49,26 @@ class EventViewModel(
     private val _formState = MutableStateFlow(FormState())
     val formState = _formState.asStateFlow()
 
-    data class FormState(
-        val eventName: String = "",
-        val eventDate: String = "",
-        val eventDesc: String = "",
-        val locationName: String? = null
+    val eventCategories = listOf(
+        "Work",
+        "Personal",
+        "School",
+        "Travel",
+        "Health",
+        "Family",
+        "Other"
     )
 
-    fun updateFormState(name: String, date: String, desc: String, locationName: String? = null) {
-        _formState.value = FormState(name, date, desc, locationName)
+    data class FormState(
+        val eventName: String = "",
+        val eventDate: String? = "",
+        val eventDesc: String? = "",
+        val locationName: String? = null,
+        val eventCategory: String? = null
+    )
+
+    fun updateFormState(name: String, date: String?, desc: String?, locationName: String? = null, category: String? = null) {
+        _formState.value = FormState(name, date, desc, locationName, category)
     }
 
     fun updateLocationName(locationName: String?) {
