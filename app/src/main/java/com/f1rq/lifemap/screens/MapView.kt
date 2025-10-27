@@ -51,6 +51,8 @@ import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 import androidx.core.graphics.drawable.DrawableCompat
+import com.f1rq.lifemap.data.MapTheme
+import com.f1rq.lifemap.data.toTileSource
 
 @SuppressLint("UseKtx")
 @Composable
@@ -60,6 +62,7 @@ fun MapView(
     viewModel: EventViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val mapTheme by viewModel.mapTheme.collectAsState()
 
     var showSheet by remember { mutableStateOf(false) }
     var mapView by remember { mutableStateOf<OSMMapView?>(null) }
@@ -152,7 +155,7 @@ fun MapView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 OSMMapView(ctx).apply {
-                    setTileSource(positronTileSource)
+                    setTileSource(mapTheme.toTileSource())
                     setMultiTouchControls(true)
                     isTilesScaledToDpi = true
 
@@ -178,7 +181,6 @@ fun MapView(
             },
             update = { view ->
                 view.overlays.removeAll { it is Marker }
-
                 uiState.events.forEach { event ->
                     if (event.latitude != null && event.longitude != null) {
                         val marker = Marker(view)
@@ -193,10 +195,15 @@ fun MapView(
                             DrawableCompat.setTint(it, categoryColor.toArgb())
                             marker.icon = it
                         }
-
                         view.overlays.add(marker)
                     }
                 }
+
+                val themeTileSource = mapTheme.toTileSource()
+                if (view.tileProvider.tileSource != themeTileSource) {
+                    view.setTileSource(themeTileSource)
+                }
+
                 view.invalidate()
             }
         )
