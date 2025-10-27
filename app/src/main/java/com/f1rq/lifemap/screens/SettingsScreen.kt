@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.f1rq.lifemap.components.SettingsLabel
@@ -55,21 +56,28 @@ fun SettingsScreen(navController: NavController, modifier: Modifier = Modifier) 
         }
 
         SettingsLabel(
+            text = "Map Theme",
+            iconResource = painterResource(com.f1rq.lifemap.R.drawable.map_24px),
+            desc = "Select map theme",
+            onClick = { navController.navigate("settings_map_theme") }
+        )
+
+        SettingsLabel(
             text = "Notifications",
-            iconResource = Icons.Outlined.Notifications,
+            iconResource = painterResource(com.f1rq.lifemap.R.drawable.notifications_button),
             desc = "Notifications",
             onClick = { navController.navigate("settings_notifications") }
         )
 
         SettingsLabel(
             text = "Contact",
-            iconResource = Icons.Outlined.Email,
+            iconResource = painterResource(com.f1rq.lifemap.R.drawable.mail_24px),
             desc = "Contact us"
         )
 
         SettingsLabel(
             text = "Report a bug",
-            iconResource = Icons.Outlined.Email,
+            iconResource = painterResource(com.f1rq.lifemap.R.drawable.bug_report_24px),
             desc = "Report a bug"
         )
     }
