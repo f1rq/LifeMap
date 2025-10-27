@@ -13,20 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.ui.theme.InactiveNavColor
 import com.f1rq.lifemap.ui.theme.ActiveNavColor
 import com.f1rq.lifemap.ui.theme.PrimaryColor
-import com.f1rq.lifemap.R.drawable.navbar_listview_button
-import com.f1rq.lifemap.R.drawable.navbar_mapview_button
 
 @Composable
 fun NavBar(
@@ -69,9 +61,9 @@ fun NavBar(
                             )
                     ) {
                         Icon(
-                            painter = painterResource(id = navbar_mapview_button),
+                            painter = painterResource(id = com.f1rq.lifemap.R.drawable.map_24px),
                             contentDescription = "Map View",
-                            modifier = Modifier.requiredSize(24.dp),
+                            modifier = Modifier.requiredSize(30.dp),
                             tint = PrimaryColor
                         )
                     }
@@ -92,9 +84,9 @@ fun NavBar(
                             )
                     ) {
                         Icon(
-                            painter = painterResource(id = navbar_listview_button),
+                            painter = painterResource(id = com.f1rq.lifemap.R.drawable.list_24px),
                             contentDescription = "List View",
-                            modifier = Modifier.requiredSize(24.dp),
+                            modifier = Modifier.requiredSize(30.dp),
                             tint = PrimaryColor
                         )
                     }
