@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.f1rq.lifemap.ui.theme.MainBG
 import com.f1rq.lifemap.ui.theme.MainTextColor
@@ -23,7 +24,7 @@ import com.f1rq.lifemap.ui.theme.PrimaryColor
 fun SettingsLabel(
     modifier: Modifier = Modifier,
     text: String,
-    iconResource: ImageVector = Icons.Default.Edit,
+    iconResource: Painter = painterResource(id = com.f1rq.lifemap.R.drawable.settings_button),
     desc: String? = null,
     onClick: () -> Unit = {},
 ) {
@@ -46,9 +47,10 @@ fun SettingsLabel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = iconResource,
+                painter = iconResource,
                 contentDescription = desc,
-                tint = PrimaryColor
+                tint = PrimaryColor,
+                modifier = Modifier.size(24.dp)
             )
 
             Spacer(modifier = Modifier.size(12.dp))
