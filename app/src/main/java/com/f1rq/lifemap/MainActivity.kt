@@ -32,6 +32,7 @@ import com.f1rq.lifemap.screens.ListView
 import com.f1rq.lifemap.screens.MapView
 import com.f1rq.lifemap.screens.NotificationsScreen
 import com.f1rq.lifemap.screens.SettingsScreen
+import com.f1rq.lifemap.screens.settingsScreens.SettingsMapThemeScreen
 import com.f1rq.lifemap.screens.settingsScreens.SettingsNotificationsScreen
 import com.f1rq.lifemap.ui.theme.ActiveNavColor
 import com.f1rq.lifemap.ui.theme.InactiveNavColor
@@ -163,6 +164,12 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("settings_notifications") {
                                 SettingsNotificationsScreen(
+                                    navController = navController,
+                                    Modifier
+                                )
+                            }
+                            composable("settings_map_theme") {
+                                SettingsMapThemeScreen(
                                     navController = navController,
                                     Modifier
                                 )
