@@ -52,6 +52,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.datastore.core)
+    implementation(libs.androidx.datastore.preferences.rxjava3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
