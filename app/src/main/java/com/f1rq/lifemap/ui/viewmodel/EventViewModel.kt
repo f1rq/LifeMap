@@ -1,11 +1,13 @@
 package com.f1rq.lifemap.ui.viewmodel
 
+import android.app.Application
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.f1rq.lifemap.data.entity.Event
@@ -14,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
+import com.f1rq.lifemap.data.MapTheme
+import com.f1rq.lifemap.data.MapThemeStore
 
 data class EventUiState(
     val events: List<Event> = emptyList(),
@@ -25,9 +29,27 @@ data class EventUiState(
 )
 
 class EventViewModel(
+    application: Application,
     private val eventRepository: EventRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
+    private val _mapTheme = MutableStateFlow(MapTheme.POSITRON)
+    val mapTheme: StateFlow<MapTheme> = _mapTheme.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            MapThemeStore.mapThemeFlow(getApplication()).collect { theme ->
+                _mapTheme.value = theme
+            }
+        }
+    }
+
+    fun setMapTheme(theme: MapTheme) {
+        viewModelScope.launch {
+            MapThemeStore.setMapTheme(getApplication(), theme)
+            _mapTheme.value = theme
+        }
+    }
     private val _operationState = MutableStateFlow(
         EventUiState(isLoading = true)
     )
@@ -255,18 +277,5 @@ class EventViewModel(
 
     fun clearSuccessMessage() {
         _operationState.value = _operationState.value.copy(successMessage = null)
-    }
-
-    fun testSuccessMessage() {
-        val testMessage = buildAnnotatedString {
-            append("TEST MESSAGE - Event ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("'TestEvent'")
-            }
-            append(" added successfully!")
-        }
-        _operationState.value = _operationState.value.copy(
-            successMessage = testMessage
-        )
     }
 }

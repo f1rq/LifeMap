@@ -1,5 +1,6 @@
 package com.f1rq.lifemap.di
 
+import android.app.Application
 import androidx.room.Room
 import com.f1rq.lifemap.data.database.AppDatabase
 import com.f1rq.lifemap.data.repository.EventRepository
@@ -27,5 +28,4 @@ val repositoryModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { EventViewModel(get()) }
-}
+    viewModel { EventViewModel(androidContext() as Application, get()) }}
