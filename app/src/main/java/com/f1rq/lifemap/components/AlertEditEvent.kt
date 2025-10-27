@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -122,7 +124,7 @@ fun AlertEditEvent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Location Search
-                    Row (
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
@@ -220,7 +222,24 @@ fun AlertEditEvent(
                             ) {
                                 viewModel.eventCategories.forEach { category ->
                                     DropdownMenuItem(
-                                        text = { Text(category) },
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(16.dp)
+                                                        .background(
+                                                            color = viewModel.getCategoryColor(
+                                                                category
+                                                            ),
+                                                            shape = androidx.compose.foundation.shape.CircleShape
+                                                        )
+                                                )
+                                                Text(category)
+                                            }
+                                        },
                                         onClick = {
                                             editedEvent = editedEvent.copy(category = category)
                                             expanded = false
