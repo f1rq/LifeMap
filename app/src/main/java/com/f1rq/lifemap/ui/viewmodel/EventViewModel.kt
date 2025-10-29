@@ -8,7 +8,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.f1rq.lifemap.data.entity.Event
 import com.f1rq.lifemap.data.repository.EventRepository
@@ -18,6 +17,11 @@ import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 import com.f1rq.lifemap.data.MapTheme
 import com.f1rq.lifemap.data.MapThemeStore
+import com.f1rq.lifemap.data.SortOption
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class EventUiState(
     val events: List<Event> = emptyList(),
@@ -35,6 +39,29 @@ class EventViewModel(
 
     private val _mapTheme = MutableStateFlow(MapTheme.POSITRON)
     val mapTheme: StateFlow<MapTheme> = _mapTheme.asStateFlow()
+
+    private val _filterText = MutableStateFlow("")
+    val filterText: StateFlow<String> = _filterText.asStateFlow()
+
+    private val _selectedCategories = MutableStateFlow<Set<String>>(emptySet())
+    val selectedCategories: StateFlow<Set<String>> = _selectedCategories.asStateFlow()
+
+    private val _sortOption = MutableStateFlow(SortOption.NEWEST)
+    val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
+
+    fun setFilterText(text: String) {
+        _filterText.value = text
+    }
+
+    fun toggleCategory(category: String) {
+        _selectedCategories.update { current ->
+            if (current.contains(category)) current - category else current + category
+        }
+    }
+
+    fun setSortOption(option: SortOption) {
+        _sortOption.value = option
+    }
 
     init {
         viewModelScope.launch {
@@ -116,15 +143,66 @@ class EventViewModel(
         _formState.value = FormState()
     }
 
+    private fun parseDateToEpochMillis(dateStr: String?): Long? {
+        if (dateStr.isNullOrBlank()) return null
+        return try {
+            val parts = dateStr.trim().split('/')
+            if (parts.size != 3) return null
+            val day = parts[0].toInt()
+            val month = parts[1].toInt()
+            val year = parts[2].toInt()
+            val localDate = LocalDate.of(year, month, day)
+            localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private val _scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     val uiState: StateFlow<EventUiState> = combine(
         eventRepository.getAllEvents(),
-        _operationState
-    ) { events, operationState ->
-        val result = operationState.copy(
-            events = events,
+        _operationState,
+        _filterText,
+        _selectedCategories,
+        _sortOption
+    ) { events, operationState, filter, categories, sort ->
+        var list = events
+
+        if (filter.isNotBlank()) {
+            val q = filter.trim().lowercase()
+            list = list.filter { ev ->
+                ev.name.lowercase().contains(q)
+                        || (ev.locationName?.lowercase()?.contains(q) ?: false)
+                        || (ev.category?.lowercase()?.contains(q) ?: false)
+            }
+        }
+
+        if (categories.isNotEmpty()) {
+            list = list.filter {
+                ev -> ev.category != null && categories.contains(ev.category)
+            }
+        }
+
+        list = run {
+            val mapped = list.map { ev -> ev to (parseDateToEpochMillis(ev.date)) }
+
+            when (sort) {
+                SortOption.NEWEST -> mapped
+                    .sortedByDescending { it.second ?: Long.MIN_VALUE }
+                    .map { it.first }
+                SortOption.OLDEST -> mapped
+                    .sortedBy { it.second ?: Long.MAX_VALUE }
+                    .map { it.first }
+                SortOption.TITLE_AZ -> list.sortedBy { it.name.lowercase() }
+                SortOption.TITLE_ZA -> list.sortedByDescending { it.name.lowercase() }
+            }
+        }
+
+        operationState.copy(
+            events = list,
             isLoading = false
         )
-        result
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
