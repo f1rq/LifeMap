@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import com.f1rq.lifemap.R
 import com.f1rq.lifemap.components.AlertEditEvent
 import com.f1rq.lifemap.components.EventInfoSheet
+import com.f1rq.lifemap.components.EventListControls
 
 @Composable
 fun ListView(
@@ -61,6 +62,7 @@ fun ListView(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        EventListControls(viewModel = viewModel)
         when {
             uiState.isLoading -> {
                 Box(
