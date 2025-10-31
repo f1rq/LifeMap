@@ -48,7 +48,6 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.MapView as OSMMapView
-import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 import androidx.core.graphics.drawable.DrawableCompat
