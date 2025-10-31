@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
+import android.widget.TextView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,6 @@ import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.views.overlay.Marker
 import java.io.File
 import androidx.core.graphics.drawable.DrawableCompat
-import com.f1rq.lifemap.data.MapTheme
 import com.f1rq.lifemap.data.toTileSource
 
 @SuppressLint("UseKtx")
@@ -70,12 +70,6 @@ fun MapView(
     var currentUserLocation by remember { mutableStateOf<GeoPoint?>(null)}
 
     val context = LocalContext.current
-
-    val positronTileSource = XYTileSource (
-        "CartoDB_Positron",
-        1, 19, 256, ".png",
-        arrayOf("https://a.basemaps.cartocdn.com/light_all/")
-    )
 
     // Function to center map on user location
     fun centerOnUserLocation() {
@@ -194,6 +188,50 @@ fun MapView(
                             val categoryColor = viewModel.getCategoryColor(event.category)
                             DrawableCompat.setTint(it, categoryColor.toArgb())
                             marker.icon = it
+                        }
+
+                        marker.setOnMarkerClickListener { m, mapView ->
+                            if (m.isInfoWindowOpen) {
+                                    m.closeInfoWindow()
+                                    return@setOnMarkerClickListener true
+                                }
+                            mapView.overlays.filterIsInstance<Marker>().forEach { it.closeInfoWindow() }
+                            m.showInfoWindow()
+                            true
+                        }
+
+                        marker.infoWindow = object : org.osmdroid.views.overlay.infowindow.InfoWindow(
+                            R.layout.marker_info_window, view
+                        ) {
+                            override fun onOpen(item: Any?) {
+                                val ev = event
+                                val titleView = mView?.findViewById<TextView>(R.id.marker_title)
+                                val dateView = mView?.findViewById<TextView>(R.id.marker_date)
+                                val descView = mView?.findViewById<TextView>(R.id.marker_desc)
+
+                                titleView?.text = ev.name
+
+                                val dateText = ev.date
+                                if (dateText.isNullOrBlank()) {
+                                    dateView?.visibility = android.view.View.GONE
+                                } else {
+                                    dateView?.visibility = android.view.View.VISIBLE
+                                    dateView?.text = dateText
+                                }
+
+                                val descText = ev.description
+                                if (descText.isNullOrBlank()) {
+                                    descView?.visibility = android.view.View.GONE
+                                } else {
+                                    descView?.visibility = android.view.View.VISIBLE
+                                    descView?.text = descText
+                                }
+                            }
+
+                            override fun onClose() {
+                                mView?.findViewById<TextView>(R.id.marker_date)?.visibility = android.view.View.VISIBLE
+                                mView?.findViewById<TextView>(R.id.marker_desc)?.visibility = android.view.View.VISIBLE
+                            }
                         }
                         view.overlays.add(marker)
                     }
